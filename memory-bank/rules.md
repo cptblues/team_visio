@@ -1,0 +1,58 @@
+# Agora.io Video and Audio Rules
+
+When implementing real-time communication:
+- Use the Agora.io Web SDK.
+- Initialize the client with `AgoraRTC.createClient({ mode: "rtc", codec: "vp8" })`.
+- Automatically join channels and publish audio/video streams on room entry.
+- Handle errors with try/catch blocks.
+
+Applies to: src/lib/agora/*.js
+
+# Firebase Integration Rules
+
+When working with Firebase:
+- Use the official Firebase Web SDK for Firestore and Authentication.
+- Structure data in collections like `users`, `sessions`, and `rooms`.
+- Use `onSnapshot` for real-time updates from Firestore.
+- Avoid hardcoding Firebase configuration; reference it from environment variables.
+
+Applies to: src/lib/**/*.{js,ts}
+
+# Project Structure Guidelines
+
+Follow this structure:
+- Place Svelte components in `src/components`.
+- Place utility functions (e.g., Firebase, Agora.io) in `src/lib`.
+- Use `src/routes` for routing if SvelteKit is used.
+- Keep configuration files in the project root.
+
+Applies to: src/**/*.{svelte,js,ts}
+
+# Security Best Practices
+
+For security:
+- Never hardcode sensitive data like API keys, Agora App IDs, or Firebase credentials.
+- Use environment variables (e.g., `import.meta.env.VITE_FIREBASE_API_KEY`).
+- Delegate sensitive operations to Firebase Cloud Functions when possible.
+
+Applies to: src/**/*.*
+
+# Svelte Component Guidelines
+
+When generating code for Svelte components:
+- Use Svelte's reactive declarations (e.g., `$:`, `let`) for state management.
+- Bind events declaratively (e.g., `on:click={handleClick}`).
+- Avoid React or Vue.js patterns like hooks or directives.
+- Place components in `src/components`.
+
+Applies to: src/components/**/*.svelte
+
+Reference: @file .cursor/rules/firebase-integration.md
+# Svelte Stores Management
+
+For state management:
+- Use Svelte stores (`writable`, `readable`) for global state (e.g., user data, room status).
+- Update stores reactively when Firebase or Agora.io data changes.
+- Import stores into components with `import { storeName } from '$lib/stores'`.
+
+Applies to: src/**/*.{svelte,js,ts}
