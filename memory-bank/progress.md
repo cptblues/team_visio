@@ -73,3 +73,28 @@
 **Notes :**
 - La structure choisie facilite la gestion des dépendances et le test unitaire grâce à une organisation modulaire.
 - Les tests utilisent des mocks pour simuler les appels à l'API Firebase, permettant de tester l'application sans connexion réelle à Firebase.
+
+## Étape 4 : Création d'une page d'accueil simple
+**Date:** 3 avril 2025
+
+### Tâches accomplies:
+- Création d'une structure de composants modulaire pour l'interface utilisateur
+- Mise en place des composants suivants:
+  - Header: En-tête avec logo et informations de configuration
+  - Hero: Section principale de présentation de l'application
+  - Features: Présentation des fonctionnalités clés
+  - CallToAction: Section incitant à l'utilisation du service
+  - Footer: Pied de page avec liens et copyright
+- Ajout d'un fichier CSS global avec une palette de couleurs cohérente
+- Intégration du routeur SPA (Single Page Application) avec svelte-spa-router
+- Configuration du système de routes dans le fichier routes.js
+
+### Tests:
+- Création d'un test basique pour vérifier que le composant de la page d'accueil est correctement défini
+- Validation que tous les tests existants continuent de fonctionner correctement
+- Test visuel de l'interface utilisateur dans le navigateur
+
+### Notes:
+- Structure modulaire facilitant la maintenance et l'évolution des composants
+- Design responsive adapté à tous les types d'appareils
+- Interface utilisateur intuitive avec appels à l'action clairs pour créer ou rejoindre une salle

@@ -69,6 +69,39 @@ team_visio/
 - **src/tests/firebase.test.js** : Tests unitaires pour l'initialisation de Firebase.
 - **src/tests/firestore.test.js** : Tests unitaires pour les fonctions Firestore.
 
+## Composants UI
+
+La structure des composants de l'interface utilisateur est la suivante :
+
+```
+src/components/
+├── Header.svelte        # En-tête de l'application avec logo et statut
+├── Footer.svelte        # Pied de page avec liens et copyright
+├── Hero.svelte          # Section principale de présentation sur la page d'accueil
+├── Features.svelte      # Présentation des fonctionnalités de l'application
+└── CallToAction.svelte  # Incitation à l'action pour l'utilisateur
+```
+
+## Styles
+
+Les styles de l'application sont centralisés dans :
+
+```
+src/styles/
+└── global.css           # Styles globaux, variables CSS et utilitaires
+```
+
+## Routing
+
+Le système de routage est géré par svelte-spa-router :
+
+```
+src/
+├── routes.js            # Configuration des routes de l'application
+└── routes/
+    └── index.svelte     # Composant de la page d'accueil
+```
+
 ## Modèle de données
 
 ### Collection `users`
