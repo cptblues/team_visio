@@ -3,10 +3,12 @@
   import viteLogo from '/vite.svg'
   import Counter from './lib/Counter.svelte'
   import { firebaseConfig, environment, isConfigValid } from './lib/config'
+  import { firebaseApp, db, auth } from './lib/firebase'
   
   // Affichage des variables d'environnement dans la console
   console.log('Environnement actuel:', environment);
   console.log('Configuration valide:', isConfigValid);
+  console.log('Firebase initialisé:', !!firebaseApp);
   
   // Pour éviter d'exposer les clés API complètes en production
   if (!import.meta.env.PROD) {
@@ -35,7 +37,8 @@
   </p>
 
   <p class="read-the-docs">
-    Configuration {isConfigValid ? 'valide' : 'invalide'}
+    Configuration {isConfigValid ? 'valide' : 'invalide'} | 
+    Firebase {firebaseApp ? 'initialisé' : 'non initialisé'}
   </p>
 </main>
 

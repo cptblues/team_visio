@@ -13,11 +13,17 @@ team_visio/
 │   │   ├── assets/             # Images, polices et autres ressources
 │   │   ├── lib/                # Bibliothèques et utilitaires
 │   │   │   ├── firebase/       # Utilitaires Firebase
+│   │   │   │   ├── index.js    # Initialisation Firebase
+│   │   │   │   ├── firestore.js # Utilitaires Firestore
+│   │   │   │   ├── auth.js     # Utilitaires d'authentification
+│   │   │   │   └── rooms.js    # Utilitaires de gestion des salles
 │   │   │   ├── Counter.svelte  # Composant exemple
 │   │   │   └── config.js       # Configuration de l'application
 │   │   ├── tests/              # Tests automatisés
 │   │   │   ├── App.test.js     # Test du composant App
-│   │   │   └── config.test.js  # Test de la configuration
+│   │   │   ├── config.test.js  # Test de la configuration
+│   │   │   ├── firebase.test.js # Test de l'initialisation Firebase
+│   │   │   └── firestore.test.js # Test des fonctions Firestore
 │   │   ├── App.svelte          # Composant racine de l'application
 │   │   ├── main.js             # Point d'entrée de l'application
 │   │   └── setupTests.js       # Configuration des tests
@@ -49,10 +55,62 @@ team_visio/
 - **src/setupTests.js** : Configure l'environnement de test pour Vitest.
 - **src/lib/config.js** : Module qui gère les variables d'environnement et la configuration.
 
+### Module Firebase
+
+- **src/lib/firebase/index.js** : Point d'entrée pour Firebase qui initialise les services (Firestore, Auth) et exporte les instances.
+- **src/lib/firebase/firestore.js** : Fonctions CRUD génériques pour interagir avec Firestore et définition des collections.
+- **src/lib/firebase/auth.js** : Fonctions pour gérer l'authentification des utilisateurs (inscription, connexion, déconnexion).
+- **src/lib/firebase/rooms.js** : Fonctions spécifiques pour gérer les salles dans l'application.
+
 ### Tests
 
 - **src/tests/App.test.js** : Tests unitaires pour le composant App.
 - **src/tests/config.test.js** : Tests unitaires pour la configuration.
+- **src/tests/firebase.test.js** : Tests unitaires pour l'initialisation de Firebase.
+- **src/tests/firestore.test.js** : Tests unitaires pour les fonctions Firestore.
+
+## Modèle de données
+
+### Collection `users`
+
+Stocke les informations des utilisateurs.
+
+```javascript
+{
+  uid: String,           // ID utilisateur (correspondant à l'ID Firebase Auth)
+  email: String,         // Email de l'utilisateur
+  displayName: String,   // Nom d'affichage
+  isAdmin: Boolean,      // Si l'utilisateur est administrateur
+  createdAt: Timestamp   // Date de création du compte
+}
+```
+
+### Collection `rooms`
+
+Stocke les informations des salles.
+
+```javascript
+{
+  name: String,          // Nom de la salle
+  createdBy: String,     // ID de l'utilisateur créateur
+  isPublic: Boolean,     // Si la salle est publique
+  participants: Array,   // Liste des participants
+  maxParticipants: Number, // Nombre maximum de participants (null = illimité)
+  createdAt: Timestamp,  // Date de création de la salle
+  updatedAt: Timestamp   // Date de dernière modification
+}
+```
+
+### Collection `settings`
+
+Stocke les paramètres globaux de l'application.
+
+```javascript
+{
+  id: String,            // ID du document (par exemple "global")
+  // Autres paramètres selon les besoins
+}
+```
 
 ## Environnements
 
@@ -70,7 +128,6 @@ Les variables d'environnement sont accessible via `import.meta.env.VITE_XXX` dan
 
 ### Dossiers à venir
 
-- **src/lib/firebase/** : Utilitaires pour l'intégration de Firebase (auth, firestore, etc.).
 - **src/components/** : Composants réutilisables (boutons, formulaires, etc.).
 - **src/routes/** : Pages de l'application (accueil, salles, etc.).
 - **src/stores/** : Magasins Svelte pour la gestion de l'état global.

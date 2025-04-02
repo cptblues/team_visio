@@ -45,3 +45,31 @@
 **Notes :**
 - Les clés d'API actuelles sont des valeurs temporaires pour le développement. Elles devront être remplacées par de vraies clés lorsque les projets Firebase seront créés.
 - Nous avons dû adapter notre approche de test pour éviter de modifier directement `import.meta.env` qui est en lecture seule.
+
+## Étape 3 : Initialisation de Firebase dans le projet (TERMINÉE)
+
+**Date :** 2 avril 2025
+
+**Tâches accomplies :**
+- Création d'une structure modulaire pour l'intégration de Firebase :
+  - `src/lib/firebase/index.js` : Point d'entrée principal qui initialise Firebase
+  - `src/lib/firebase/firestore.js` : Utilitaires pour interagir avec Firestore
+  - `src/lib/firebase/auth.js` : Utilitaires pour l'authentification
+  - `src/lib/firebase/rooms.js` : Fonctions spécifiques pour gérer les salles
+- Définition des collections principales dans Firestore : `users`, `rooms` et `settings`
+- Implémentation des fonctions CRUD génériques pour interagir avec Firestore
+- Implémentation des fonctions d'inscription, connexion et déconnexion des utilisateurs
+- Implémentation des fonctions de gestion des salles (création, récupération, etc.)
+- Mise à jour de `App.svelte` pour tester l'initialisation de Firebase
+- Création de tests unitaires pour chaque module
+
+**Tests :**
+- Test manuel : L'application affiche l'état d'initialisation de Firebase sur la page d'accueil
+- Tests automatisés :
+  - Vérification de l'initialisation de Firebase
+  - Tests des fonctions CRUD pour Firestore
+  - Tests des utilitaires pour les collections et documents
+
+**Notes :**
+- La structure choisie facilite la gestion des dépendances et le test unitaire grâce à une organisation modulaire.
+- Les tests utilisent des mocks pour simuler les appels à l'API Firebase, permettant de tester l'application sans connexion réelle à Firebase.
