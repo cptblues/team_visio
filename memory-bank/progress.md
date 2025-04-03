@@ -133,3 +133,33 @@
 - Les formulaires incluent une validation côté client et des messages d'erreur clairs
 - Pour le développement, des règles de sécurité Firestore permissives ont été configurées, mais elles devront être restreintes en production
 - En cas d'erreurs de type "Missing or insufficient permissions", vérifier les règles de sécurité Firestore
+
+## Étape 7 : Afficher une liste statique de salles
+**Date:** 3 avril 2025
+
+### Tâches accomplies:
+- Création d'un composant `RoomList.svelte` pour afficher une liste statique de salles
+- Configuration d'une liste de salles codées en dur avec différentes propriétés (nom, description, statut public/privé, etc.)
+- Stylisation des cartes de salles avec indication visuelle du statut (bordure verte pour les salles publiques, orange pour les privées)
+- Ajout d'un badge indiquant clairement si une salle est publique ou privée
+- Implémentation d'une vérification d'accès pour les salles privées (seuls les utilisateurs connectés peuvent y accéder)
+- Intégration du composant de liste des salles dans la page d'accueil
+- Amélioration du store utilisateur avec un store dérivé `isLoggedIn` pour faciliter les vérifications d'authentification
+
+### Tests:
+- Création d'un test de base pour vérifier que le composant `RoomList` peut être correctement importé et initialisé
+- Vérification visuelle que la liste des salles s'affiche correctement sur la page d'accueil
+- Test du comportement des salles privées lorsqu'un utilisateur non connecté tente d'y accéder
+
+### Notes:
+- La liste est actuellement statique et sera connectée à Firestore dans l'étape suivante
+- L'interface utilisateur est responsive et s'adapte aux écrans de différentes tailles
+- Les salles sont affichées dans une grille sur les grands écrans et en colonnes sur les appareils mobiles
+- Chaque carte de salle comprend :
+  - Le nom de la salle
+  - Une description
+  - Un badge indiquant le statut public/privé
+  - La capacité maximale de participants
+  - La date de création
+  - Un bouton pour rejoindre la salle
+- Le design utilise la palette de couleurs pastel définie précédemment pour maintenir une cohérence visuelle

@@ -6,6 +6,7 @@
   import Footer from '../components/Footer.svelte';
   import AuthContainer from '../components/auth/AuthContainer.svelte';
   import UserProfile from '../components/auth/UserProfile.svelte';
+  import RoomList from '../components/rooms/RoomList.svelte';
   import { currentUser } from '../stores/userStore';
   import FirebaseDebugger from '../components/FirebaseDebugger.svelte';
   
@@ -44,6 +45,12 @@
         </div>
       </section>
     {/if}
+    
+    <section class="rooms-section">
+      <div class="container">
+        <RoomList />
+      </div>
+    </section>
     
     <Features />
     <CallToAction />
@@ -85,5 +92,16 @@
     text-align: center;
     margin-bottom: 2rem;
     color: var(--foreground);
+  }
+  
+  .rooms-section {
+    padding: 3rem 0;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
   }
 </style> 

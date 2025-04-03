@@ -60,17 +60,6 @@
 
 ---
 
-### Étape 6 : Gérer l'état de l'utilisateur (PRIORITAIRE)
-- **Instructions** :
-  - Créer un magasin Svelte dans le dossier des utilitaires pour stocker les informations de l’utilisateur connecté.
-  - Mettre à jour ce magasin lorsqu’un utilisateur se connecte ou se déconnecte via Firebase.
-  - Stocker et récupérer le statut d’administrateur dans ce magasin.
-  - Afficher le statut de connexion (connecté ou non) sur la page d’accueil.
-- **Test** :
-  - **Manuel** : Se connecter avec un compte test et vérifier que le statut sur la page d’accueil passe à « connecté » avec l’email de l’utilisateur affiché.
-  - **Automatisé** : Créer un test pour vérifier que le magasin Svelte réagit correctement aux changements d’état de l’utilisateur.
-
----
 
 ### Étape 7 : Afficher une liste statique de salles
 - **Instructions** :

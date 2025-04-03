@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import { onAuthChange } from '../lib/firebase/auth';
 
 // Store pour l'état de l'utilisateur
@@ -6,6 +6,9 @@ export const currentUser = writable(null);
 
 // Store pour l'état de chargement de l'authentification
 export const authLoading = writable(true);
+
+// Store dérivé pour savoir si l'utilisateur est connecté
+export const isLoggedIn = derived(currentUser, $currentUser => $currentUser !== null);
 
 // Initialisation de l'écoute des changements d'état d'authentification
 let unsubscribe;
