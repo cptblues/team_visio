@@ -318,3 +318,60 @@
 - L'interface permet aux utilisateurs de revenir facilement à la page d'accueil
 - La visioconférence est automatiquement initialisée lorsque les conditions sont remplies (salle publique ou utilisateur connecté)
 - Les messages d'erreur sont clairs et guident l'utilisateur en cas de problème d'accès ou de chargement
+
+## Étape 13 : Ajout d'un bouton pour quitter la salle (TERMINÉE)
+
+**Date :** 17 avril 2025
+
+### Tâches accomplies
+- Ajout d'un bouton "Quitter la salle" sur la page des salles (room.svelte) visible uniquement pour les utilisateurs connectés
+- Implémentation d'une fonction `exitRoom()` qui :
+  - Met à jour le statut de présence de l'utilisateur dans Firebase via `leaveRoom(roomId)`
+  - Redirige l'utilisateur vers la page d'accueil en utilisant `push('/')`
+  - Affiche un état de chargement pendant la sortie
+- Stylisation du bouton avec un style distinct (rouge) pour indiquer qu'il s'agit d'une action importante
+- Gestion des erreurs éventuelles lors de la sortie de la salle
+
+### Tests
+- Vérification que le bouton n'apparaît que pour les utilisateurs connectés
+- Tests manuels de sortie de salle pour confirmer que :
+  - L'utilisateur est bien redirigé vers la page d'accueil
+  - Le statut de présence est correctement mis à jour dans Firebase
+- Confirmation que les tests automatisés existants continuent de fonctionner
+
+### Notes
+- Le bouton utilise un style cohérent avec le reste de l'interface tout en se démarquant pour indiquer son importance
+- La fonction `exitRoom()` est conçue pour fonctionner même en cas d'échec de la mise à jour du statut dans Firebase
+- L'état `isExiting` permet d'éviter les clics multiples pendant le processus de sortie
+
+## Étape 15 : Configuration du déploiement pour tests et production (TERMINÉE)
+
+**Date :** 17 avril 2025
+
+### Tâches accomplies
+- Configuration de l'intégration avec Firebase Hosting :
+  - Création du fichier `firebase.json` avec les paramètres de déploiement et les règles de redirection
+  - Création du fichier `.firebaserc` pour lier le projet Firebase
+- Mise en place de l'infrastructure CI/CD avec GitHub Actions :
+  - Configuration du workflow pour le déploiement automatique lors des merges sur la branche main
+  - Configuration du workflow pour la création d'environnements de prévisualisation lors des pull requests
+  - Paramétrage des secrets GitHub requis pour le déploiement
+- Ajout de scripts npm pour faciliter le déploiement :
+  - `deploy` : Construit l'application et la déploie sur Firebase Hosting
+  - `deploy:preview` : Crée un canal de prévisualisation temporaire
+- Documentation complète du processus de déploiement dans le README du projet
+- Création d'un test automatisé pour vérifier la configuration de déploiement
+
+### Tests
+- Test manuel de la commande de build pour vérifier que l'application se construit correctement
+- Création d'un test automatisé (`deployment.test.js`) qui vérifie :
+  - L'existence et le contenu des fichiers de configuration Firebase
+  - La configuration correcte des workflows GitHub Actions
+  - La présence des scripts de déploiement dans package.json
+
+### Notes
+- Le déploiement utilise Firebase Hosting pour sa facilité d'intégration avec Firebase et son niveau gratuit généreux
+- Les environnements de prévisualisation permettent de tester les changements avant de les déployer en production
+- Les variables d'environnement sont gérées via des secrets GitHub pour maintenir la sécurité
+- Le processus de déploiement est entièrement automatisé, ne nécessitant aucune intervention manuelle
+- La documentation fournie permet à n'importe quel membre de l'équipe de comprendre et utiliser le processus de déploiement
