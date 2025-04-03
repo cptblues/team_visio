@@ -105,15 +105,48 @@ export const getCurrentUser = () => {
 export const onAuthChange = (callback) => {
   return onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // Récupérer les informations additionnelles de l'utilisateur depuis Firestore
-      const userData = await getDocument(COLLECTIONS.USERS, user.uid);
-      
-      callback({
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName || userData?.displayName,
-        isAdmin: userData?.isAdmin || false
-      });
+      try {
+        // Récupérer les informations additionnelles de l'utilisateur depuis Firestore
+        const userData = await getDocument(COLLECTIONS.USERS, user.uid);
+        
+        // Si l'utilisateur n'existe pas dans Firestore, le créer
+        if (!userData) {
+          console.log(`Création de l'utilisateur ${user.uid} dans Firestore`);
+          await setDocument(COLLECTIONS.USERS, user.uid, {
+            email: user.email,
+            displayName: user.displayName || '',
+            isAdmin: false,
+            createdAt: new Date()
+          });
+          
+          // Récupérer à nouveau les données après création
+          const newUserData = await getDocument(COLLECTIONS.USERS, user.uid);
+          
+          callback({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || newUserData?.displayName,
+            isAdmin: newUserData?.isAdmin || false
+          });
+        } else {
+          // Utilisateur existant
+          callback({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || userData?.displayName,
+            isAdmin: userData?.isAdmin || false
+          });
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des données utilisateur:", error);
+        // En cas d'erreur, on retourne quand même les infos de base
+        callback({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || '',
+          isAdmin: false
+        });
+      }
     } else {
       callback(null);
     }
@@ -131,6 +164,24 @@ export const isCurrentUserAdmin = async () => {
     return false;
   }
   
-  const userData = await getDocument(COLLECTIONS.USERS, user.uid);
-  return userData?.isAdmin || false;
+  try {
+    const userData = await getDocument(COLLECTIONS.USERS, user.uid);
+    
+    // Si l'utilisateur n'existe pas dans Firestore, le créer
+    if (!userData) {
+      console.log(`L'utilisateur ${user.uid} n'existe pas dans Firestore, création...`);
+      await setDocument(COLLECTIONS.USERS, user.uid, {
+        email: user.email,
+        displayName: user.displayName || '',
+        isAdmin: false,
+        createdAt: new Date()
+      });
+      return false; // Nouvel utilisateur n'est pas admin par défaut
+    }
+    
+    return userData?.isAdmin || false;
+  } catch (error) {
+    console.error("Erreur lors de la vérification du statut administrateur:", error);
+    return false;
+  }
 }; 

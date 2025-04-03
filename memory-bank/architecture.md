@@ -16,14 +16,17 @@ team_visio/
 │   │   │   │   ├── index.js    # Initialisation Firebase
 │   │   │   │   ├── firestore.js # Utilitaires Firestore
 │   │   │   │   ├── auth.js     # Utilitaires d'authentification
-│   │   │   │   └── rooms.js    # Utilitaires de gestion des salles
+│   │   │   │   ├── rooms.js    # Utilitaires de gestion des salles
+│   │   │   │   └── admin.js    # Utilitaires d'administration
 │   │   │   ├── Counter.svelte  # Composant exemple
 │   │   │   └── config.js       # Configuration de l'application
 │   │   ├── tests/              # Tests automatisés
 │   │   │   ├── App.test.js     # Test du composant App
 │   │   │   ├── config.test.js  # Test de la configuration
 │   │   │   ├── firebase.test.js # Test de l'initialisation Firebase
-│   │   │   └── firestore.test.js # Test des fonctions Firestore
+│   │   │   ├── firestore.test.js # Test des fonctions Firestore
+│   │   │   ├── RoomList.test.js # Test du composant RoomList
+│   │   │   └── AdminRoomManager.test.js # Test du gestionnaire admin
 │   │   ├── App.svelte          # Composant racine de l'application
 │   │   ├── main.js             # Point d'entrée de l'application
 │   │   └── setupTests.js       # Configuration des tests
@@ -61,6 +64,8 @@ team_visio/
 - **src/lib/firebase/firestore.js** : Fonctions CRUD génériques pour interagir avec Firestore et définition des collections.
 - **src/lib/firebase/auth.js** : Fonctions pour gérer l'authentification des utilisateurs (inscription, connexion, déconnexion).
 - **src/lib/firebase/rooms.js** : Fonctions spécifiques pour gérer les salles dans l'application.
+- **src/lib/firebase/admin.js** : Fonctions d'administration pour gérer les droits des utilisateurs.
+- **src/lib/firebase/seedData.js** : Fonctions d'initialisation de données pour le développement.
 
 ### Tests
 
@@ -68,6 +73,9 @@ team_visio/
 - **src/tests/config.test.js** : Tests unitaires pour la configuration.
 - **src/tests/firebase.test.js** : Tests unitaires pour l'initialisation de Firebase.
 - **src/tests/firestore.test.js** : Tests unitaires pour les fonctions Firestore.
+- **src/tests/RoomList.test.js** : Tests unitaires pour le composant de liste des salles.
+- **src/tests/AdminRoomManager.test.js** : Tests unitaires pour le gestionnaire admin.
+- **src/tests/HomePage.test.js** : Tests unitaires pour la page d'accueil.
 
 ## Composants UI
 
@@ -80,11 +88,19 @@ src/components/
 ├── Hero.svelte          # Section principale de présentation sur la page d'accueil
 ├── Features.svelte      # Présentation des fonctionnalités de l'application
 ├── CallToAction.svelte  # Incitation à l'action pour l'utilisateur
-└── auth/                # Composants liés à l'authentification
-    ├── AuthContainer.svelte  # Conteneur pour les formulaires d'authentification
-    ├── LoginForm.svelte      # Formulaire de connexion
-    ├── RegisterForm.svelte   # Formulaire d'inscription
-    └── UserProfile.svelte    # Profil de l'utilisateur connecté
+├── UserStatusBar.svelte # Barre de statut utilisateur
+├── FirebaseDebugger.svelte # Débogueur Firebase en développement
+├── auth/                # Composants liés à l'authentification
+│   ├── AuthContainer.svelte  # Conteneur pour les formulaires d'authentification
+│   ├── LoginForm.svelte      # Formulaire de connexion
+│   ├── RegisterForm.svelte   # Formulaire d'inscription
+│   └── UserProfile.svelte    # Profil de l'utilisateur connecté
+├── rooms/               # Composants liés aux salles
+│   ├── RoomList.svelte       # Liste des salles disponibles
+│   ├── AddRoomForm.svelte    # Formulaire d'ajout de salle
+│   └── AdminRoomManager.svelte # Gestionnaire de salles pour administrateurs
+└── admin/               # Composants d'administration
+    └── MakeAdmin.svelte      # Outil pour devenir administrateur en développement
 ```
 
 ## Stores
@@ -139,10 +155,11 @@ Stocke les informations des salles.
 ```javascript
 {
   name: String,          // Nom de la salle
+  description: String,   // Description de la salle
   createdBy: String,     // ID de l'utilisateur créateur
   isPublic: Boolean,     // Si la salle est publique
-  participants: Array,   // Liste des participants
-  maxParticipants: Number, // Nombre maximum de participants (null = illimité)
+  participants: Array,   // Liste des participants [userId1, userId2, ...]
+  capacity: Number,      // Nombre maximum de participants (null = illimité)
   createdAt: Timestamp,  // Date de création de la salle
   updatedAt: Timestamp   // Date de dernière modification
 }
@@ -238,3 +255,34 @@ VITE_FIREBASE_MESSAGING_SENDER_ID
 VITE_FIREBASE_APP_ID
 VITE_FIREBASE_MEASUREMENT_ID
 ```
+
+## Fonctionnalités d'administration
+
+L'application inclut un système d'administration permettant aux utilisateurs ayant le statut d'administrateur de gérer les salles et les utilisateurs :
+
+### Gestion des droits
+
+- **Module d'administration** : `src/lib/firebase/admin.js` fournit des fonctions pour gérer les droits d'administration.
+- **Composant de promotion** : `src/components/admin/MakeAdmin.svelte` permet aux utilisateurs de se promouvoir administrateurs en développement.
+
+### API d'administration
+
+```javascript
+// Mettre à jour le statut d'administrateur d'un utilisateur (réservé aux admins)
+updateUserAdminStatus(userId, isAdmin)
+
+// Se promouvoir administrateur (uniquement en développement)
+makeSelfAdmin()
+```
+
+### Stockage des droits
+
+- Le statut d'administrateur est stocké dans le champ `isAdmin` de chaque document utilisateur dans Firestore.
+- Le système vérifie automatiquement ce statut lors de la connexion et le met à disposition dans le store utilisateur.
+- L'interface utilisateur s'adapte automatiquement pour afficher les fonctionnalités d'administration aux utilisateurs concernés.
+
+### Accès aux fonctionnalités administratives
+
+- Un store dérivé `isAdmin` permet de vérifier facilement si l'utilisateur actuel est un administrateur.
+- Les fonctionnalités d'administration sont conditionnellement affichées dans l'interface utilisateur.
+- Des vérifications de sécurité sont effectuées côté serveur pour empêcher les accès non autorisés.

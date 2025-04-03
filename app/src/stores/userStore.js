@@ -7,8 +7,14 @@ export const currentUser = writable(null);
 // Store pour l'état de chargement de l'authentification
 export const authLoading = writable(true);
 
+// Store pour les erreurs d'authentification
+export const authError = writable(null);
+
 // Store dérivé pour savoir si l'utilisateur est connecté
 export const isLoggedIn = derived(currentUser, $currentUser => $currentUser !== null);
+
+// Store dérivé pour savoir si l'utilisateur est administrateur
+export const isAdmin = derived(currentUser, $currentUser => $currentUser?.isAdmin === true);
 
 // Initialisation de l'écoute des changements d'état d'authentification
 let unsubscribe;

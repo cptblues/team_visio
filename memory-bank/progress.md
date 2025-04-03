@@ -198,3 +198,60 @@
   - Informations sur le créateur et date de création
 - L'initialisation des données de démonstration est conditionnelle à l'environnement de développement
 - Les vérifications des droits sont implémentées pour les actions de modification et suppression de salles
+
+## Étape 9 : Permettre la création et gestion de salles pour les administrateurs
+
+**Date :** 5 avril 2025
+
+### Tâches accomplies
+- Création d'un store dérivé `isAdmin` dans `userStore.js` pour vérifier si l'utilisateur est administrateur
+- Développement d'un composant complet `AdminRoomManager.svelte` avec les fonctionnalités suivantes :
+  - Interface d'administration réservée aux utilisateurs ayant le statut d'administrateur
+  - Formulaire de création de nouvelles salles avec validation
+  - Liste tabulaire des salles existantes avec actions pour chaque salle
+  - Fonctionnalités d'édition pour modifier les propriétés des salles (nom, description, capacité, statut public/privé)
+  - Possibilité de supprimer des salles avec confirmation
+- Intégration du panneau d'administration dans la page d'accueil, visible uniquement pour les utilisateurs administrateurs
+- Mise en place d'une logique conditionnelle pour afficher soit le panneau d'administration (pour les administrateurs), soit le formulaire standard d'ajout de salle (pour les utilisateurs non-administrateurs)
+- Implémentation des vérifications d'autorisation pour toutes les opérations administratives
+
+### Tests
+- Création de tests unitaires pour le composant `AdminRoomManager` vérifiant :
+  - L'affichage correct de l'interface d'administration pour les administrateurs
+  - L'affichage d'un message d'erreur pour les utilisateurs non-administrateurs
+  - L'affichage d'un message pour les utilisateurs non connectés
+- Test manuel des fonctionnalités d'administration, notamment la création, l'édition et la suppression de salles
+
+### Notes
+- Le statut d'administrateur est stocké dans Firestore et récupéré lors de la connexion de l'utilisateur
+- L'utilisation d'un store dérivé permet une vérification réactive des autorisations dans l'interface utilisateur
+- Les opérations de modification et suppression de salles vérifient que l'utilisateur est bien l'administrateur avant d'exécuter l'action
+- L'interface d'administration offre une vue tabulaire des salles pour faciliter la gestion par les administrateurs
+
+## Étape 9+ : Amélioration du système d'administration (TERMINÉE)
+
+**Date :** 5 avril 2025
+
+### Tâches accomplies
+- Création d'un module `admin.js` dans le dossier `lib/firebase` avec des fonctions spécifiques pour l'administration :
+  - `updateUserAdminStatus` : permet à un administrateur de modifier le statut d'un autre utilisateur
+  - `makeSelfAdmin` : permet à un utilisateur de se promouvoir administrateur en développement
+- Développement d'un composant `MakeAdmin.svelte` offrant une interface utilisateur pour se promouvoir administrateur pendant le développement
+- Modification des fonctions d'authentification pour assurer la création automatique des documents utilisateur dans Firestore :
+  - Mise à jour de `onAuthChange` pour créer automatiquement le document utilisateur s'il n'existe pas
+  - Adaptation de `isCurrentUserAdmin` pour gérer le cas où l'utilisateur n'existe pas encore dans Firestore
+- Intégration du composant `MakeAdmin` dans la page d'accueil, visible uniquement en mode développement et pour les utilisateurs connectés
+- Correction des erreurs de type dans le composant `AdminRoomManager.svelte` concernant le traitement des messages de succès
+
+### Tests
+- Test de promotion en administrateur pour un utilisateur connecté
+- Vérification de la création automatique du document utilisateur dans Firestore
+- Validation que les tests unitaires passent avec les modifications apportées
+- Test de l'affichage conditionnel du module de promotion administrateur en mode développement
+
+### Notes
+- Le système est conçu pour créer automatiquement la collection `users` dans Firestore si elle n'existe pas
+- La fonction `makeSelfAdmin` est sécurisée pour n'être disponible qu'en mode développement
+- Les messages d'erreur ont été améliorés pour guider l'utilisateur en cas de problème
+- Les utilisateurs doivent se reconnecter après être devenus administrateurs pour que les changements prennent effet
+- La structure de type pour les messages de succès a été corrigée pour utiliser un booléen pour l'état et une chaîne pour le message

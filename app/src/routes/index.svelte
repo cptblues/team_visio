@@ -9,11 +9,13 @@
   import RoomList from '../components/rooms/RoomList.svelte';
   import { onMount } from 'svelte';
   import { initFirebase } from '../lib/firebase';
-  import { initUserStore, isLoggedIn, currentUser } from '../stores/userStore';
+  import { initUserStore, isLoggedIn, currentUser, isAdmin } from '../stores/userStore';
   import UserStatusBar from '../components/UserStatusBar.svelte';
   import AddRoomForm from '../components/rooms/AddRoomForm.svelte';
+  import AdminRoomManager from '../components/rooms/AdminRoomManager.svelte';
   import FirebaseDebugger from '../components/FirebaseDebugger.svelte';
   import { seedRooms } from '../lib/firebase/seedData';
+  import MakeAdmin from '../components/admin/MakeAdmin.svelte';
   
   let showAuthSection = false;
   
@@ -90,8 +92,15 @@
       </section>
     {/if}
     
-    <!-- Formulaire d'ajout de salle (pour utilisateurs connectés) -->
-    {#if $isLoggedIn}
+    <!-- Panneau d'administration des salles (pour administrateurs uniquement) -->
+    {#if $isLoggedIn && $isAdmin}
+      <section class="admin-section">
+        <div class="container">
+          <AdminRoomManager />
+        </div>
+      </section>
+    {:else if $isLoggedIn}
+      <!-- Formulaire d'ajout de salle (pour utilisateurs connectés non-administrateurs) -->
       <section class="add-room-section">
         <div class="container">
           <AddRoomForm />
@@ -116,6 +125,11 @@
     {#if import.meta.env.DEV}
       <div class="container">
         <FirebaseDebugger />
+        
+        <!-- Module pour devenir administrateur en développement -->
+        {#if $isLoggedIn}
+          <MakeAdmin />
+        {/if}
       </div>
     {/if}
   </main>
@@ -162,6 +176,13 @@
     text-align: center;
     margin-bottom: 2rem;
     color: var(--foreground);
+  }
+  
+  .admin-section {
+    padding: 2rem 0;
+    background-color: var(--background);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
   
   .add-room-section {
