@@ -333,3 +333,40 @@ export const jitsiConfig = {
 VITE_JITSI_DOMAIN      # Domaine du serveur Jitsi Meet (défaut: meet.jit.si)
 VITE_JITSI_ROOM_PREFIX # Préfixe pour les noms de salles (défaut: teamvisio-)
 ```
+
+### Bonnes pratiques et enseignements
+
+Lors de l'intégration de Jitsi Meet dans un composant Svelte, nous avons rencontré quelques défis et identifié plusieurs bonnes pratiques :
+
+#### 1. Gestion du conteneur DOM
+Le composant JitsiRoom a été conçu pour **toujours** rendre le conteneur DOM (`jitsiContainer`) même lorsqu'il n'est pas visible, puis le masquer/afficher via CSS. Cela évite les problèmes de références DOM non disponibles liés au cycle de vie des composants Svelte.
+
+```html
+<div class="jitsi-container" bind:this={jitsiContainer} style="display: {isJoined ? 'block' : 'none'}"></div>
+```
+
+#### 2. Stratégie d'initialisation
+L'initialisation comprend ces étapes pour maximiser la stabilité :
+- Attendre un `tick()` pour que Svelte mette à jour le DOM
+- Ajouter un court délai (100ms) avant d'initialiser Jitsi Meet
+- Vérifier explicitement que le conteneur est disponible
+
+#### 3. Structure CSS adaptée
+Le positionnement absolu et les z-index appropriés permettent de superposer correctement les états de chargement et d'erreur sur le conteneur Jitsi :
+```css
+.jitsi-container {
+  position: absolute;
+  z-index: 1;
+}
+.loading-container {
+  position: relative;
+  z-index: 2;
+}
+```
+
+#### 4. Gestion complète du cycle de vie
+- `onMount` : chargement du script et initialisation de Jitsi Meet
+- `onDestroy` : libération des ressources et mise à jour de Firestore
+- Fonctions explicites pour rejoindre/quitter les salles manuellement
+
+Ces approches assurent une intégration robuste de l'API externe Jitsi Meet dans le framework Svelte, prévenant les erreurs courantes liées aux références DOM et au cycle de vie des composants.

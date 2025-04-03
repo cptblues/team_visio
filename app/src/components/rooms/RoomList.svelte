@@ -6,6 +6,7 @@
     subscribeToCollection, 
     addDocument 
   } from '../../lib/firebase/firestore';
+  import { push } from 'svelte-spa-router';
   
   let rooms = [];
   let loading = true;
@@ -55,9 +56,8 @@
       return;
     }
     
-    // Pour l'instant, on affiche juste une alerte
-    // Dans l'étape 11, cela sera remplacé par une navigation vers la page de la salle
-    alert(`Vous rejoignez la salle : ${room.name}`);
+    // Naviguer vers la page de la salle
+    push(`/room/${room.id}`);
   }
 </script>
 

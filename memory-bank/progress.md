@@ -295,3 +295,35 @@
 - L'interface de Jitsi Meet a été simplifiée pour n'afficher que les boutons les plus utiles
 - Le composant est conçu pour être facilement intégré dans n'importe quelle page de l'application
 - Les tests unitaires utilisent des mocks pour simuler le comportement de l'API Jitsi Meet, qui n'est disponible que dans le navigateur
+
+## Étape 11 : Création d'une page détaillée pour les salles de conférence (TERMINÉE)
+
+**Date :** 6 avril 2025
+
+### Tâches accomplies
+- Création d'un nouveau composant `room.svelte` dans le dossier `routes` pour afficher les détails d'une salle spécifique
+- Mise à jour du fichier `routes.js` pour ajouter la route `/room/:id` permettant d'accéder à une salle via son identifiant
+- Modification du composant `RoomList.svelte` pour naviguer vers la page détaillée d'une salle au lieu d'afficher une alerte
+- Implémentation des fonctionnalités suivantes dans la page de salle :
+  - Affichage des informations complètes de la salle (nom, description, statut, capacité, date de création)
+  - Liste des participants actuellement dans la salle
+  - Intégration du composant `JitsiRoom` pour la visioconférence
+  - Gestion des accès pour les salles privées (nécessitant une connexion)
+  - Formulaire d'authentification intégré pour faciliter la connexion
+  - Interface adaptative avec états de chargement et gestion des erreurs
+- Mise en place d'une souscription en temps réel aux changements de la salle via Firestore
+- Création d'une interface utilisateur complète et responsive pour la page de salle
+
+### Tests
+- Test manuel de la navigation depuis la liste des salles vers une salle spécifique
+- Vérification du chargement des données de la salle depuis Firestore
+- Test de l'accès aux salles privées avec et sans authentification
+- Validation de l'intégration de Jitsi Meet et de son interaction avec Firestore
+- Test de la persistance des participants dans la base de données lors de l'entrée et de la sortie d'une salle
+
+### Notes
+- La page utilise une souscription en temps réel pour maintenir les informations de la salle et la liste des participants à jour
+- L'identifiant de la salle est extrait des paramètres d'URL fournis par le routeur
+- L'interface permet aux utilisateurs de revenir facilement à la page d'accueil
+- La visioconférence est automatiquement initialisée lorsque les conditions sont remplies (salle publique ou utilisateur connecté)
+- Les messages d'erreur sont clairs et guident l'utilisateur en cas de problème d'accès ou de chargement

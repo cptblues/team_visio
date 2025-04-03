@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy, tick } from 'svelte';
   import { 
     initJitsiMeet, 
     disposeJitsiMeet, 
@@ -25,6 +25,13 @@
   
   // Initialiser Jitsi Meet quand le composant est monté
   onMount(async () => {
+    console.log("JitsiRoom monté, attendons le tick");
+    // Attendre d'abord que le DOM soit complètement rendu
+    await tick();
+    
+    // Vérifier si le conteneur est disponible après le tick
+    console.log("Après tick, jitsiContainer disponible?", !!jitsiContainer);
+    
     try {
       isLoading = true;
       hasError = false;
@@ -40,10 +47,12 @@
         }
       }
       
-      // Attendre que le conteneur soit prêt
-      await initializeJitsiMeet();
-      
-      isJoined = true;
+      if (autoJoin) {
+        // Attendre un bref délai pour s'assurer que tout est bien initialisé
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await initializeJitsiMeet();
+        isJoined = true;
+      }
     } catch (error) {
       console.error('Erreur lors de l\'initialisation de Jitsi Meet:', error);
       hasError = true;
@@ -75,9 +84,13 @@
   
   // Initialiser Jitsi Meet
   async function initializeJitsiMeet() {
+    // Vérifier à nouveau que le conteneur est prêt
     if (!jitsiContainer) {
+      console.error("Le conteneur Jitsi n'est pas défini lors de l'initialisation");
       throw new Error('Le conteneur Jitsi Meet n\'est pas prêt');
     }
+    
+    console.log("Initialisation de Jitsi Meet avec le conteneur", jitsiContainer);
     
     const options = {
       parentNode: jitsiContainer,
@@ -102,6 +115,9 @@
       if ($currentUser) {
         await joinRoom(roomId);
       }
+      
+      // Attendre un bref délai pour s'assurer que tout est bien initialisé
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Initialiser Jitsi Meet
       await initializeJitsiMeet();
@@ -131,6 +147,9 @@
 </script>
 
 <div class="jitsi-room">
+  <!-- Le conteneur est toujours rendu mais caché selon les conditions -->
+  <div class="jitsi-container" bind:this={jitsiContainer} style="display: {isJoined ? 'block' : 'none'}"></div>
+  
   {#if isLoading}
     <div class="loading-container">
       <div class="loading-spinner"></div>
@@ -152,8 +171,6 @@
         Rejoindre
       </button>
     </div>
-  {:else}
-    <div class="jitsi-container" bind:this={jitsiContainer}></div>
   {/if}
   
   {#if isJoined}
@@ -172,6 +189,7 @@
     width: 100%;
     height: 100%;
     min-height: 500px;
+    position: relative;
   }
   
   .jitsi-container {
@@ -179,10 +197,13 @@
     overflow: hidden;
     background-color: #202124;
     border-radius: 8px;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     min-height: 500px;
+    z-index: 1;
   }
   
   .loading-container,
@@ -194,11 +215,13 @@
     justify-content: center;
     width: 100%;
     height: 100%;
-    min-height: 300px;
+    min-height: 500px;
     padding: 2rem;
     background-color: var(--background-alt);
     border-radius: 8px;
     text-align: center;
+    position: relative;
+    z-index: 2;
   }
   
   .loading-spinner {
@@ -233,6 +256,8 @@
     background-color: var(--background);
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
+    position: relative;
+    z-index: 2;
   }
   
   .btn {
