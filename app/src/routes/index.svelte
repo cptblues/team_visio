@@ -7,8 +7,13 @@
   import AuthContainer from '../components/auth/AuthContainer.svelte';
   import UserProfile from '../components/auth/UserProfile.svelte';
   import RoomList from '../components/rooms/RoomList.svelte';
-  import { currentUser } from '../stores/userStore';
+  import { onMount } from 'svelte';
+  import { initFirebase } from '../lib/firebase';
+  import { initUserStore, isLoggedIn, currentUser } from '../stores/userStore';
+  import UserStatusBar from '../components/UserStatusBar.svelte';
+  import AddRoomForm from '../components/rooms/AddRoomForm.svelte';
   import FirebaseDebugger from '../components/FirebaseDebugger.svelte';
+  import { seedRooms } from '../lib/firebase/seedData';
   
   let showAuthSection = false;
   
@@ -19,6 +24,26 @@
   function handleAuthSuccess() {
     showAuthSection = false;
   }
+  
+  // Firebase initialization status
+  let firebaseInitialized = false;
+  
+  onMount(async () => {
+    try {
+      await initFirebase();
+      firebaseInitialized = true;
+      
+      // Initialize user authentication store
+      initUserStore();
+      
+      // Initialiser des données de démonstration si on est en mode développement
+      if (import.meta.env.DEV) {
+        await seedRooms();
+      }
+    } catch (error) {
+      console.error('Error initializing Firebase:', error);
+    }
+  });
 </script>
 
 <svelte:head>
@@ -31,6 +56,25 @@
   <main>
     <Hero onOpenAuth={toggleAuthSection} />
     
+    <!-- Status utilisateur -->
+    <section class="status-section">
+      <div class="container">
+        <UserStatusBar />
+        
+        <!-- Affichage du statut Firebase (pour debug) -->
+        {#if import.meta.env.DEV}
+          <div class="debug-status">
+            {#if firebaseInitialized}
+              <div class="status success">Firebase initialisé avec succès</div>
+            {:else}
+              <div class="status error">Firebase non initialisé</div>
+            {/if}
+          </div>
+        {/if}
+      </div>
+    </section>
+    
+    <!-- Section authentification ou profil -->
     {#if showAuthSection || $currentUser}
       <section class="user-section">
         <div class="container">
@@ -46,17 +90,33 @@
       </section>
     {/if}
     
+    <!-- Formulaire d'ajout de salle (pour utilisateurs connectés) -->
+    {#if $isLoggedIn}
+      <section class="add-room-section">
+        <div class="container">
+          <AddRoomForm />
+        </div>
+      </section>
+    {/if}
+    
+    <!-- Liste des salles disponibles -->
     <section class="rooms-section">
       <div class="container">
         <RoomList />
       </div>
     </section>
     
-    <Features />
-    <CallToAction />
+    <!-- Sections informatives pour les non-connectés -->
+    {#if !$isLoggedIn}
+      <Features />
+      <CallToAction />
+    {/if}
     
+    <!-- Débogueur Firebase (uniquement en développement) -->
     {#if import.meta.env.DEV}
-      <FirebaseDebugger />
+      <div class="container">
+        <FirebaseDebugger />
+      </div>
     {/if}
   </main>
   <Footer />
@@ -78,6 +138,16 @@
     flex: 1;
   }
   
+  .status-section {
+    padding: 1rem 0;
+    background-color: var(--background-alt);
+    text-align: center;
+  }
+  
+  .debug-status {
+    margin-top: 0.5rem;
+  }
+  
   .user-section {
     padding: 3rem 0;
     background-color: var(--background-alt);
@@ -94,8 +164,14 @@
     color: var(--foreground);
   }
   
+  .add-room-section {
+    padding: 2rem 0;
+    background-color: var(--background);
+  }
+  
   .rooms-section {
     padding: 3rem 0;
+    background-color: var(--background-alt);
   }
   
   .container {
@@ -103,5 +179,29 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1rem;
+  }
+  
+  .status {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  
+  .success {
+    background-color: var(--success-light);
+    color: var(--success-dark);
+  }
+  
+  .error {
+    background-color: var(--error-light);
+    color: var(--error-dark);
+  }
+  
+  @media (max-width: 768px) {
+    .container {
+      padding: 0 1rem;
+    }
   }
 </style> 

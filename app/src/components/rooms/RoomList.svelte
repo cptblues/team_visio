@@ -1,56 +1,52 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { isLoggedIn } from '../../stores/userStore';
+  import { 
+    COLLECTIONS, 
+    subscribeToCollection, 
+    addDocument 
+  } from '../../lib/firebase/firestore';
   
-  // Liste statique de salles pour l'étape 7
-  let rooms = [
-    {
-      id: 'room1',
-      name: 'Salle Principale',
-      description: 'Salle de réunion générale pour toute l\'équipe',
-      isPublic: true,
-      createdBy: 'admin',
-      createdAt: new Date('2025-04-01T10:00:00'),
-      capacity: 10,
-      participants: []
-    },
-    {
-      id: 'room2',
-      name: 'Salle Marketing',
-      description: 'Réunions et discussions pour l\'équipe marketing',
-      isPublic: true,
-      createdBy: 'admin',
-      createdAt: new Date('2025-04-01T11:30:00'),
-      capacity: 8,
-      participants: []
-    },
-    {
-      id: 'room3',
-      name: 'Salle Développement',
-      description: 'Espace dédié aux développeurs pour les discussions techniques',
-      isPublic: true,
-      createdBy: 'admin',
-      createdAt: new Date('2025-04-01T14:15:00'),
-      capacity: 12,
-      participants: []
-    },
-    {
-      id: 'room4',
-      name: 'Salle Privée',
-      description: 'Salle privée pour les réunions confidentielles',
-      isPublic: false,
-      createdBy: 'admin',
-      createdAt: new Date('2025-04-02T09:00:00'),
-      capacity: 5,
-      participants: []
+  let rooms = [];
+  let loading = true;
+  let error = null;
+  let unsubscribe;
+  
+  onMount(() => {
+    // S'abonner aux changements dans la collection ROOMS
+    try {
+      unsubscribe = subscribeToCollection(
+        COLLECTIONS.ROOMS,
+        (roomsData) => {
+          // Traiter les données et mettre à jour la liste
+          rooms = roomsData;
+          loading = false;
+        }
+      );
+    } catch (err) {
+      console.error('Erreur lors de l\'abonnement à la collection des salles:', err);
+      error = `Erreur lors du chargement des salles: ${err.message}`;
+      loading = false;
     }
-  ];
+  });
+  
+  onDestroy(() => {
+    // Se désabonner lors de la destruction du composant
+    if (unsubscribe) {
+      unsubscribe();
+    }
+  });
   
   function formatDate(date) {
+    if (!date) return 'Date inconnue';
+    
+    // Si c'est un timestamp Firestore, le convertir en Date
+    const dateObj = date && date.toDate ? date.toDate() : new Date(date);
+    
     return new Intl.DateTimeFormat('fr-FR', {
       dateStyle: 'medium',
       timeStyle: 'short'
-    }).format(date);
+    }).format(dateObj);
   }
   
   function handleRoomClick(room) {
@@ -71,7 +67,17 @@
     <p class="subtitle">Rejoignez une salle existante pour commencer une visioconférence</p>
   </div>
   
-  {#if rooms.length === 0}
+  {#if loading}
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Chargement des salles...</p>
+    </div>
+  {:else if error}
+    <div class="error-state">
+      <p>{error}</p>
+      <button class="btn btn-primary" on:click={() => window.location.reload()}>Réessayer</button>
+    </div>
+  {:else if rooms.length === 0}
     <div class="empty-state">
       <p>Aucune salle disponible pour le moment.</p>
       <p>Créez une nouvelle salle pour commencer.</p>
@@ -92,10 +98,10 @@
               {room.isPublic ? 'Public' : 'Privé'}
             </span>
           </div>
-          <p class="room-description">{room.description}</p>
+          <p class="room-description">{room.description || 'Aucune description'}</p>
           <div class="room-details">
             <span class="room-capacity">
-              <i class="icon-users"></i> {room.capacity} participants max
+              <i class="icon-users"></i> {room.capacity || '∞'} participants max
             </span>
             <span class="room-created">
               Créée le {formatDate(room.createdAt)}
@@ -130,12 +136,38 @@
     font-size: 1.1rem;
   }
   
-  .empty-state {
+  .loading-state, .empty-state, .error-state {
     text-align: center;
     padding: 3rem;
     background-color: var(--background-alt);
     border-radius: 0.5rem;
     color: var(--foreground-alt);
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--primary-light);
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .error-state {
+    border-left: 4px solid var(--error);
+    background-color: var(--error-light);
+    color: var(--error-dark);
+    text-align: left;
+  }
+  
+  .error-state button {
+    margin-top: 1rem;
   }
   
   .room-grid {

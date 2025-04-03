@@ -163,3 +163,38 @@
   - La date de création
   - Un bouton pour rejoindre la salle
 - Le design utilise la palette de couleurs pastel définie précédemment pour maintenir une cohérence visuelle
+
+## Étape 8 : Connecter la liste des salles à Firestore
+
+**Date :** 4 avril 2025
+
+### Tâches accomplies
+- Modification du composant `RoomList.svelte` pour récupérer les salles depuis Firestore en temps réel avec la fonction `subscribeToCollection`
+- Implémentation des fonctions de gestion des salles dans `firebase/rooms.js` :
+  - `createRoom`: création d'une nouvelle salle 
+  - `getRoomById`: récupération d'une salle par son ID
+  - `updateRoom`: mise à jour d'une salle avec vérification des droits
+  - `deleteRoom`: suppression d'une salle avec vérification des droits
+  - `joinRoom` et `leaveRoom`: pour gérer la participation aux salles
+- Création d'un formulaire `AddRoomForm.svelte` pour permettre aux utilisateurs connectés d'ajouter de nouvelles salles
+- Implémentation d'un script `seedData.js` pour initialiser des données de démonstration dans Firestore (utilisé en développement)
+- Mise à jour de la page d'accueil pour afficher le formulaire d'ajout de salle uniquement aux utilisateurs connectés
+
+### Tests
+- Test unitaire du composant `RoomList` vérifiant :
+  - L'affichage initial de l'état de chargement
+  - L'affichage des salles après le chargement des données
+  - Le rendu correct des détails des salles (nom, description, capacité)
+- Test manuel de l'ajout de salles via le formulaire et affichage en temps réel dans la liste
+- Vérification que les salles ajoutées sont correctement enregistrées dans Firestore
+
+### Notes
+- L'utilisation de `subscribeToCollection` permet d'avoir une synchronisation en temps réel des salles sans avoir à rafraîchir la page
+- La structure des salles dans Firestore inclut maintenant :
+  - Nom et description
+  - État public/privé
+  - Capacité maximum
+  - Liste des participants
+  - Informations sur le créateur et date de création
+- L'initialisation des données de démonstration est conditionnelle à l'environnement de développement
+- Les vérifications des droits sont implémentées pour les actions de modification et suppression de salles
