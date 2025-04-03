@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { location } from 'svelte-spa-router';
+  import { location, push } from 'svelte-spa-router';
   import { initFirebase } from '../lib/firebase';
   import { initUserStore, currentUser, isLoggedIn } from '../stores/userStore';
   import { getDocument, subscribeToDocument, COLLECTIONS } from '../lib/firebase/firestore';
@@ -22,6 +22,7 @@
   let firebaseInitialized = false;
   let showAuthSection = false;
   let participants = [];
+  let isExiting = false;
   
   function toggleAuthSection() {
     showAuthSection = !showAuthSection;
@@ -107,6 +108,23 @@
   function goBack() {
     window.history.back();
   }
+  
+  // Fonction pour quitter la salle et revenir à l'accueil
+  async function exitRoom() {
+    try {
+      isExiting = true;
+      
+      // Si l'utilisateur est connecté, mettre à jour son statut dans Firebase
+      if ($isLoggedIn && $currentUser) {
+        await leaveRoom(roomId);
+      }
+      
+      // Rediriger vers la page d'accueil
+      push('/');
+    } catch (error) {
+      console.error('Erreur lors de la sortie de la salle:', error);
+    }
+  }
 </script>
 
 <svelte:head>
@@ -141,11 +159,17 @@
             &larr; Retour
           </button>
           
-          {#if !$isLoggedIn}
-            <button class="btn btn-primary" on:click={toggleAuthSection}>
-              Se connecter
-            </button>
-          {/if}
+          <div class="header-actions">
+            {#if !$isLoggedIn}
+              <button class="btn btn-primary" on:click={toggleAuthSection}>
+                Se connecter
+              </button>
+            {:else}
+              <button class="btn btn-exit" on:click={exitRoom} disabled={isExiting}>
+                {isExiting ? 'Sortie en cours...' : 'Quitter la salle'}
+              </button>
+            {/if}
+          </div>
         </div>
         
         {#if loading}
@@ -275,6 +299,11 @@
   
   .btn-back:hover {
     text-decoration: underline;
+  }
+  
+  .header-actions {
+    display: flex;
+    gap: 1rem;
   }
   
   .loading-container, 
@@ -417,6 +446,20 @@
   
   .btn-primary:hover {
     background-color: var(--primary-dark);
+  }
+  
+  .btn-exit {
+    background-color: var(--error);
+    color: white;
+  }
+  
+  .btn-exit:hover {
+    background-color: var(--error-dark);
+  }
+  
+  .btn-exit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
   }
   
   @media (max-width: 768px) {

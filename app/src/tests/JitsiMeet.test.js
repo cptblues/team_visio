@@ -59,7 +59,14 @@ describe('Module Jitsi Meet', () => {
     // Mock de la fonction appendChild
     document.body.appendChild = vi.fn().mockImplementation((script) => {
       // Simuler le chargement réussi du script
-      setTimeout(() => script.onload(), 0);
+      setTimeout(() => {
+        // Définir JitsiMeetExternalAPI avant de déclencher l'événement onload
+        // @ts-ignore - Propriété non reconnue par TypeScript mais utilisée dans le test
+        window.JitsiMeetExternalAPI = function() {};
+        
+        // Ensuite déclencher l'événement onload
+        script.onload();
+      }, 100);
     });
     
     // Stocker l'état d'origine de window.JitsiMeetExternalAPI
