@@ -1,5 +1,7 @@
 <script>
-  // Vous pouvez ajouter des propriétés exportables ici si nécessaire
+  import { currentUser, authLoading } from '../stores/userStore';
+  
+  export let onOpenAuth = () => {};
 </script>
 
 <section class="hero">
@@ -8,9 +10,21 @@
       <h2>Visioconférences simples et sécurisées</h2>
       <p>Rejoignez une réunion en un clic ou créez votre propre salle de visioconférence. Aucune installation requise.</p>
       <div class="cta-buttons">
-        <button class="btn btn-primary">Créer une salle</button>
-        <button class="btn btn-outline">Rejoindre une salle</button>
+        {#if $authLoading}
+          <div class="loading-indicator">Chargement...</div>
+        {:else if $currentUser}
+          <button class="btn btn-primary">Créer une salle</button>
+          <button class="btn btn-outline">Rejoindre une salle</button>
+        {:else}
+          <button class="btn btn-primary" on:click={onOpenAuth}>Connexion requise</button>
+        {/if}
       </div>
+      
+      {#if $currentUser}
+        <div class="user-welcome">
+          <p>Connecté en tant que <strong>{$currentUser.displayName || $currentUser.email}</strong></p>
+        </div>
+      {/if}
     </div>
     <div class="hero-image">
       <div class="placeholder-image">
@@ -98,6 +112,25 @@
     font-weight: 500;
   }
   
+  .user-welcome {
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background-color: var(--primary-light);
+    border-radius: 0.25rem;
+    display: inline-block;
+  }
+  
+  .user-welcome p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--primary-dark);
+  }
+  
+  .loading-indicator {
+    color: var(--foreground-alt);
+    font-size: 0.9rem;
+  }
+  
   @media (max-width: 768px) {
     .container {
       flex-direction: column;
@@ -117,6 +150,10 @@
     
     .hero-image {
       width: 100%;
+    }
+    
+    .user-welcome {
+      margin: 1rem auto 0;
     }
   }
 </style> 

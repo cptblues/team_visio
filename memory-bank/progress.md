@@ -98,3 +98,38 @@
 - Structure modulaire facilitant la maintenance et l'évolution des composants
 - Design responsive adapté à tous les types d'appareils
 - Interface utilisateur intuitive avec appels à l'action clairs pour créer ou rejoindre une salle
+
+## Étape 5 : Ajout de l'authentification de base
+**Date:** 3 avril 2025
+
+### Tâches accomplies:
+- Création d'un store Svelte pour gérer l'état de l'utilisateur connecté
+- Développement des composants d'interface utilisateur pour l'authentification:
+  - `LoginForm`: Formulaire de connexion avec email et mot de passe
+  - `RegisterForm`: Formulaire d'inscription avec validation
+  - `AuthContainer`: Conteneur qui gère l'affichage du formulaire de connexion ou d'inscription
+  - `UserProfile`: Affichage des informations de l'utilisateur connecté avec bouton de déconnexion
+- Intégration des composants d'authentification dans la page d'accueil
+- Adaptation du composant Hero pour afficher des boutons d'action différents selon l'état de connexion
+- Mise en place des mécanismes de gestion des erreurs pour les formulaires
+- Résolution des problèmes de configuration Firebase:
+  - Correction des paramètres de connexion dans le fichier `.env`
+  - Mise à jour de la valeur du bucket de stockage Firebase
+  - Ajout de la configuration pour Google Analytics
+  - Configuration des règles de sécurité Firestore pour permettre l'accès en développement
+  - Création d'une base de données Firestore en mode test pour faciliter le développement
+
+### Tests:
+- Création d'un test unitaire pour vérifier que les composants d'authentification sont correctement définis
+- Vérification du bon fonctionnement des stores Svelte et des fonctions d'authentification
+- Test visuel de l'interface d'authentification et du profil utilisateur
+- Test complet du flux d'authentification (inscription, connexion, déconnexion)
+- Vérification de la persistance des données utilisateur dans Firestore
+
+### Notes:
+- L'authentification utilise Firebase Auth pour la gestion des utilisateurs
+- Les informations supplémentaires des utilisateurs sont stockées dans Firestore
+- Les administrateurs sont identifiés par un champ `isAdmin` dans leur document utilisateur
+- Les formulaires incluent une validation côté client et des messages d'erreur clairs
+- Pour le développement, des règles de sécurité Firestore permissives ont été configurées, mais elles devront être restreintes en production
+- En cas d'erreurs de type "Missing or insufficient permissions", vérifier les règles de sécurité Firestore

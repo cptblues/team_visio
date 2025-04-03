@@ -79,7 +79,21 @@ src/components/
 ├── Footer.svelte        # Pied de page avec liens et copyright
 ├── Hero.svelte          # Section principale de présentation sur la page d'accueil
 ├── Features.svelte      # Présentation des fonctionnalités de l'application
-└── CallToAction.svelte  # Incitation à l'action pour l'utilisateur
+├── CallToAction.svelte  # Incitation à l'action pour l'utilisateur
+└── auth/                # Composants liés à l'authentification
+    ├── AuthContainer.svelte  # Conteneur pour les formulaires d'authentification
+    ├── LoginForm.svelte      # Formulaire de connexion
+    ├── RegisterForm.svelte   # Formulaire d'inscription
+    └── UserProfile.svelte    # Profil de l'utilisateur connecté
+```
+
+## Stores
+
+La gestion de l'état global est effectuée à travers des stores Svelte :
+
+```
+src/stores/
+└── userStore.js         # Store pour gérer l'état de l'utilisateur connecté
 ```
 
 ## Styles
@@ -170,3 +184,57 @@ Les variables d'environnement sont accessible via `import.meta.env.VITE_XXX` dan
 - **src/lib/firebase/config.js** : Configuration de Firebase avec les variables d'environnement.
 - **src/lib/firebase/auth.js** : Fonctions pour gérer l'authentification.
 - **src/lib/firebase/firestore.js** : Fonctions pour interagir avec Firestore.
+
+## Sécurité Firebase
+
+### Règles de sécurité Firestore
+
+Configuration des règles de sécurité pour Firestore :
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Règles pour le développement (à ne pas utiliser en production)
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Règles pour la production (à implémenter plus tard)
+    // match /users/{userId} {
+    //   allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+    //   allow create: if request.auth != null;
+    // }
+    // match /rooms/{roomId} {
+    //   allow read: if true;
+    //   allow create, update, delete: if request.auth != null;
+    // }
+    // match /settings/{document=**} {
+    //   allow read: if true;
+    //   allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    // }
+  }
+}
+```
+
+### Configuration Firebase
+
+Les paramètres de configuration Firebase sont stockés dans les fichiers d'environnement :
+
+```
+.env
+.env.testing
+.env.production
+```
+
+Avec les variables suivantes :
+
+```
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+VITE_FIREBASE_MEASUREMENT_ID
+```

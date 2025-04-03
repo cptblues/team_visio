@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { firebaseApp, auth, db } from './lib/firebase';
   import { isConfigValid, environment } from './lib/config';
+  import { initUserStore } from './stores/userStore';
   import './styles/global.css';
   import Router from 'svelte-spa-router';
   import routes from './routes';
@@ -15,6 +16,13 @@
     if (firebaseApp && auth && db) {
       console.log('Firebase initialisé avec succès');
       appInitialized = true;
+      
+      // Initialiser l'écoute de l'état d'authentification
+      const unsubscribe = initUserStore();
+      
+      return () => {
+        if (unsubscribe) unsubscribe();
+      };
     } else {
       console.error('Erreur d\'initialisation de Firebase');
     }
