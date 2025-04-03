@@ -117,7 +117,8 @@ La gestion de l'état global est effectuée à travers des stores Svelte :
 
 ```
 src/stores/
-└── userStore.js         # Store pour gérer l'état de l'utilisateur connecté
+├── userStore.js         # Store pour gérer l'état de l'utilisateur connecté
+└── lib/stores/jitsiStore.js  # Store pour gérer l'état de la visioconférence et les participants
 ```
 
 ## Styles
@@ -138,7 +139,6 @@ src/
 ├── routes.js            # Configuration des routes de l'application
 └── routes/
     ├── index.svelte     # Composant de la page d'accueil
-    └── demo.svelte      # Page de démonstration pour Jitsi Meet
 ```
 
 ## Modèle de données
@@ -170,7 +170,8 @@ Stocke les informations des salles.
   participants: Array,   // Liste des participants [userId1, userId2, ...]
   capacity: Number,      // Nombre maximum de participants (null = illimité)
   createdAt: Timestamp,  // Date de création de la salle
-  updatedAt: Timestamp   // Date de dernière modification
+  updatedAt: Timestamp,  // Date de dernière modification
+  conferenceActive: Boolean // Si une visioconférence est active dans cette salle
 }
 ```
 
@@ -183,6 +184,87 @@ Stocke les paramètres globaux de l'application.
   id: String,            // ID du document (par exemple "global")
   // Autres paramètres selon les besoins
 }
+```
+
+## Intégration avec Jitsi Meet
+
+L'application intègre Jitsi Meet pour la visioconférence :
+
+### Configuration
+
+```javascript
+// Dans config.js
+export const jitsiConfig = {
+  domain: import.meta.env.VITE_JITSI_DOMAIN || 'meet.jit.si',
+  roomPrefix: import.meta.env.VITE_JITSI_ROOM_PREFIX || 'teamvisio-',
+  options: {
+    // Options pour l'interface et le comportement de Jitsi Meet
+  }
+};
+```
+
+### Architecture de l'intégration
+
+- **Module principal** : `src/lib/jitsi/index.js` gère l'initialisation de Jitsi, le chargement du script, et expose des méthodes pour contrôler les fonctionnalités (audio, vidéo, participants).
+- **Store Jitsi** : `src/stores/jitsiStore.js` maintient l'état de la visioconférence et des participants.
+- **Composant d'interface** : `src/components/conference/JitsiRoom.svelte` encapsule l'intégration dans un composant réutilisable.
+
+### Approche technique
+
+L'intégration utilise l'approche par iframe directe :
+1. Génération d'URL avec paramètres pour configurer Jitsi Meet
+2. Création d'un iframe avec les permissions nécessaires
+3. Insertion de l'iframe dans le conteneur DOM
+
+```javascript
+// Exemple simplifié de création d'iframe
+const jitsiUrl = `https://${jitsiDomain}/${roomName}?${params.toString()}`;
+const iframe = document.createElement('iframe');
+iframe.src = jitsiUrl;
+iframe.allow = 'camera; microphone; fullscreen; display-capture; autoplay';
+jitsiContainer.appendChild(iframe);
+```
+
+### Flux de fonctionnement
+
+1. Le composant `JitsiRoom` est initialisé avec un ID de salle Firestore
+2. Un conteneur DOM est préparé pour recevoir l'iframe
+3. L'URL Jitsi est générée avec les paramètres appropriés
+4. L'iframe est créé et inséré dans le conteneur
+5. Les événements de participation sont synchronisés avec Firestore
+6. Lors de la destruction du composant, l'iframe est supprimé et l'utilisateur retiré de la liste des participants
+
+### Gestion des erreurs et compatibilité
+
+- Vérification de la compatibilité du navigateur avec WebRTC
+- Mécanismes de récupération en cas d'échec d'initialisation
+- Interface utilisateur pour les différents états (chargement, erreur, rejoindre)
+- Synchronisation des participants entre Jitsi et Firestore
+
+### Bonnes pratiques et enseignements
+
+#### 1. Gestion du conteneur DOM
+Le composant JitsiRoom a été conçu pour **toujours** rendre le conteneur DOM (`jitsiContainer`). Cela évite les problèmes de références DOM non disponibles liés au cycle de vie des composants Svelte.
+
+#### 2. Stratégie d'initialisation robuste
+L'initialisation comprend ces étapes pour maximiser la stabilité :
+- Attendre un `tick()` pour que Svelte mette à jour le DOM
+- Ajouter un court délai (100ms) avant d'initialiser Jitsi Meet
+- Vérifier explicitement que le conteneur est disponible et correctement dimensionné
+
+#### 3. Structure CSS adaptée
+Le positionnement absolu et les z-index appropriés permettent de superposer correctement les états de chargement et d'erreur sur le conteneur Jitsi.
+
+#### 4. Gestion complète du cycle de vie
+- `onMount` : vérification de compatibilité et initialisation
+- `onDestroy` : nettoyage des ressources et mise à jour de Firestore
+- Fonctions explicites pour rejoindre/quitter les salles manuellement
+
+### Variables d'environnement
+
+```
+VITE_JITSI_DOMAIN      # Domaine du serveur Jitsi Meet (défaut: meet.jit.si)
+VITE_JITSI_ROOM_PREFIX # Préfixe pour les noms de salles (défaut: teamvisio-)
 ```
 
 ## Environnements
@@ -272,101 +354,4 @@ L'application inclut un système d'administration permettant aux utilisateurs ay
 ### Gestion des droits
 
 - **Module d'administration** : `src/lib/firebase/admin.js` fournit des fonctions pour gérer les droits d'administration.
-- **Composant de promotion** : `src/components/admin/MakeAdmin.svelte` permet aux utilisateurs de se promouvoir administrateurs en développement.
-
-### API d'administration
-
-```javascript
-// Mettre à jour le statut d'administrateur d'un utilisateur (réservé aux admins)
-updateUserAdminStatus(userId, isAdmin)
-
-// Se promouvoir administrateur (uniquement en développement)
-makeSelfAdmin()
-```
-
-### Stockage des droits
-
-- Le statut d'administrateur est stocké dans le champ `isAdmin` de chaque document utilisateur dans Firestore.
-- Le système vérifie automatiquement ce statut lors de la connexion et le met à disposition dans le store utilisateur.
-- L'interface utilisateur s'adapte automatiquement pour afficher les fonctionnalités d'administration aux utilisateurs concernés.
-
-### Accès aux fonctionnalités administratives
-
-- Un store dérivé `isAdmin` permet de vérifier facilement si l'utilisateur actuel est un administrateur.
-- Les fonctionnalités d'administration sont conditionnellement affichées dans l'interface utilisateur.
-- Des vérifications de sécurité sont effectuées côté serveur pour empêcher les accès non autorisés.
-
-## Intégration avec Jitsi Meet
-
-L'application intègre Jitsi Meet pour la visioconférence en utilisant leur API externe :
-
-### Configuration
-
-```javascript
-// Dans config.js
-export const jitsiConfig = {
-  domain: import.meta.env.VITE_JITSI_DOMAIN || 'meet.jit.si',
-  roomPrefix: import.meta.env.VITE_JITSI_ROOM_PREFIX || 'teamvisio-',
-  options: {
-    // Options pour l'interface et le comportement de Jitsi Meet
-  }
-};
-```
-
-### API et intégration
-
-- L'API Jitsi Meet est chargée dynamiquement par le module `src/lib/jitsi/index.js` lors de son utilisation.
-- Le composant `JitsiRoom.svelte` encapsule la logique d'intégration et synchronise les participants avec Firestore.
-- La synchronisation entre les salles Firestore et Jitsi est assurée par les fonctions `joinRoom` et `leaveRoom`.
-
-### Flux de fonctionnement
-
-1. Le composant `JitsiRoom` est initialisé avec un ID de salle Firestore.
-2. Le composant charge dynamiquement le script Jitsi si nécessaire.
-3. Une instance de l'API Jitsi est créée et configure la visioconférence avec les options appropriées.
-4. Les participants sont automatiquement ajoutés/supprimés de la liste dans Firestore lors des entrées/sorties.
-5. Lors de la destruction du composant, les ressources sont libérées et l'utilisateur est retiré de la liste des participants.
-
-### Variables d'environnement
-
-```
-VITE_JITSI_DOMAIN      # Domaine du serveur Jitsi Meet (défaut: meet.jit.si)
-VITE_JITSI_ROOM_PREFIX # Préfixe pour les noms de salles (défaut: teamvisio-)
-```
-
-### Bonnes pratiques et enseignements
-
-Lors de l'intégration de Jitsi Meet dans un composant Svelte, nous avons rencontré quelques défis et identifié plusieurs bonnes pratiques :
-
-#### 1. Gestion du conteneur DOM
-Le composant JitsiRoom a été conçu pour **toujours** rendre le conteneur DOM (`jitsiContainer`) même lorsqu'il n'est pas visible, puis le masquer/afficher via CSS. Cela évite les problèmes de références DOM non disponibles liés au cycle de vie des composants Svelte.
-
-```html
-<div class="jitsi-container" bind:this={jitsiContainer} style="display: {isJoined ? 'block' : 'none'}"></div>
-```
-
-#### 2. Stratégie d'initialisation
-L'initialisation comprend ces étapes pour maximiser la stabilité :
-- Attendre un `tick()` pour que Svelte mette à jour le DOM
-- Ajouter un court délai (100ms) avant d'initialiser Jitsi Meet
-- Vérifier explicitement que le conteneur est disponible
-
-#### 3. Structure CSS adaptée
-Le positionnement absolu et les z-index appropriés permettent de superposer correctement les états de chargement et d'erreur sur le conteneur Jitsi :
-```css
-.jitsi-container {
-  position: absolute;
-  z-index: 1;
-}
-.loading-container {
-  position: relative;
-  z-index: 2;
-}
-```
-
-#### 4. Gestion complète du cycle de vie
-- `onMount` : chargement du script et initialisation de Jitsi Meet
-- `onDestroy` : libération des ressources et mise à jour de Firestore
-- Fonctions explicites pour rejoindre/quitter les salles manuellement
-
-Ces approches assurent une intégration robuste de l'API externe Jitsi Meet dans le framework Svelte, prévenant les erreurs courantes liées aux références DOM et au cycle de vie des composants.
+- **Composant de promotion** : `src/components/admin/MakeAdmin.svelte`

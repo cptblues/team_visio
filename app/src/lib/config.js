@@ -23,26 +23,61 @@ export const jitsiConfig = {
     height: '100%',
     parentNode: null, // Doit être défini lors de l'initialisation
     configOverwrite: {
+      // Configurer l'audio et la vidéo pour être activés par défaut
       startWithAudioMuted: false,
       startWithVideoMuted: false,
-      disableDeepLinking: true,
+      prejoinPageEnabled: false, // Désactiver la page de pré-jonction
+      disableDeepLinking: true, 
       disableInviteFunctions: true,
+      enableWelcomePage: false,
+      enableClosePage: false,
+      // Activer la grille des participants (vue en mosaïque)
+      defaultLayout: 'tileview',
+      // Configurer la qualité vidéo selon les performances
+      resolution: 720,
+      constraints: {
+        video: {
+          height: {
+            ideal: 720,
+            max: 720,
+            min: 240
+          }
+        }
+      },
+      // Liste complète des boutons disponibles dans la barre d'outils
       toolbarButtons: [
-        'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
-        'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
-        'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
-        'videoquality', 'filmstrip', 'feedback', 'stats', 'tileview', 'videobackgroundblur',
-        'download', 'help', 'mute-everyone'
+        'microphone', 'camera', 'desktop', 'fullscreen',
+        'fodeviceselection', 'hangup', 'profile', 'chat', 
+        'settings', 'raisehand', 'videoquality', 'filmstrip', 
+        'tileview', 'participants-pane'
       ],
+      // Options de débogage
+      testing: {
+        p2pTestMode: false // Activer si nécessaire pour le débogage
+      },
+      // Réduire la complexité pour le débogage initial
+      disableAudioLevels: true,
+      disableSimulcast: true
     },
     interfaceConfigOverwrite: {
       SHOW_JITSI_WATERMARK: false,
       SHOW_WATERMARK_FOR_GUESTS: false,
+      MOBILE_APP_PROMO: false,
+      HIDE_INVITE_MORE_HEADER: true,
+      // Liste simplifiée des boutons pour une meilleure expérience utilisateur
       TOOLBAR_BUTTONS: [
         'microphone', 'camera', 'desktop', 'fullscreen', 'hangup',
-        'profile', 'chat', 'settings', 'raisehand', 'videoquality',
-        'tileview'
+        'chat', 'settings', 'raisehand', 'videoquality',
+        'tileview', 'participants-pane'
       ],
+      DEFAULT_BACKGROUND: '#3D3D3D',
+      DEFAULT_LOGO_URL: '',
+      DISABLE_JOIN_LEAVE_NOTIFICATIONS: false,
+      DISABLE_VIDEO_BACKGROUND: false,
+      ENABLE_FEEDBACK_ANIMATION: false,
+      FILM_STRIP_MAX_HEIGHT: 120,
+      VERTICAL_FILMSTRIP: true,
+      TILE_VIEW_MAX_COLUMNS: 5
     }
   }
 };

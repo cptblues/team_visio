@@ -130,13 +130,6 @@
         {#if $isLoggedIn}
           <MakeAdmin />
         {/if}
-        
-        <!-- Lien vers la page de démonstration Jitsi Meet -->
-        <div class="demo-link-container">
-          <h3>Démonstration Jitsi Meet</h3>
-          <p>Cliquez sur le lien ci-dessous pour tester l'intégration de Jitsi Meet.</p>
-          <a href="/demo" class="demo-link">Voir la démo Jitsi Meet</a>
-        </div>
       </div>
     {/if}
   </main>
