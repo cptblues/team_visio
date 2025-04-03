@@ -14,10 +14,44 @@ export const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-// Environnement
-export const environment = import.meta.env.VITE_APP_ENV || 'development';
+// Jitsi Meet configuration
+export const jitsiConfig = {
+  domain: import.meta.env.VITE_JITSI_DOMAIN || 'meet.jit.si',
+  roomPrefix: import.meta.env.VITE_JITSI_ROOM_PREFIX || 'teamvisio-',
+  options: {
+    width: '100%',
+    height: '100%',
+    parentNode: null, // Doit être défini lors de l'initialisation
+    configOverwrite: {
+      startWithAudioMuted: false,
+      startWithVideoMuted: false,
+      disableDeepLinking: true,
+      disableInviteFunctions: true,
+      toolbarButtons: [
+        'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+        'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
+        'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
+        'videoquality', 'filmstrip', 'feedback', 'stats', 'tileview', 'videobackgroundblur',
+        'download', 'help', 'mute-everyone'
+      ],
+    },
+    interfaceConfigOverwrite: {
+      SHOW_JITSI_WATERMARK: false,
+      SHOW_WATERMARK_FOR_GUESTS: false,
+      TOOLBAR_BUTTONS: [
+        'microphone', 'camera', 'desktop', 'fullscreen', 'hangup',
+        'profile', 'chat', 'settings', 'raisehand', 'videoquality',
+        'tileview'
+      ],
+    }
+  }
+};
+
+// Environment information
+export const environment = import.meta.env.MODE || 'development';
+
 export const isDevelopment = environment === 'development';
-export const isTesting = environment === 'testing';
+
 export const isProduction = environment === 'production';
 
 // Validation des variables d'environnement requises

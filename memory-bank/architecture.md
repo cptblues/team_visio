@@ -67,6 +67,11 @@ team_visio/
 - **src/lib/firebase/admin.js** : Fonctions d'administration pour gérer les droits des utilisateurs.
 - **src/lib/firebase/seedData.js** : Fonctions d'initialisation de données pour le développement.
 
+### Module Jitsi Meet
+
+- **src/lib/jitsi/index.js** : Utilitaires pour l'intégration avec Jitsi Meet, gestion de la connexion et initialisation des salles de visioconférence.
+- **src/components/conference/JitsiRoom.svelte** : Composant qui encapsule la visioconférence Jitsi Meet avec gestion des états et synchronisation avec Firestore.
+
 ### Tests
 
 - **src/tests/App.test.js** : Tests unitaires pour le composant App.
@@ -76,6 +81,7 @@ team_visio/
 - **src/tests/RoomList.test.js** : Tests unitaires pour le composant de liste des salles.
 - **src/tests/AdminRoomManager.test.js** : Tests unitaires pour le gestionnaire admin.
 - **src/tests/HomePage.test.js** : Tests unitaires pour la page d'accueil.
+- **src/tests/JitsiMeet.test.js** : Tests unitaires pour l'intégration de Jitsi Meet.
 
 ## Composants UI
 
@@ -101,6 +107,8 @@ src/components/
 │   └── AdminRoomManager.svelte # Gestionnaire de salles pour administrateurs
 └── admin/               # Composants d'administration
     └── MakeAdmin.svelte      # Outil pour devenir administrateur en développement
+└── conference/          # Composants de visioconférence
+    └── JitsiRoom.svelte      # Intégration de Jitsi Meet dans l'application
 ```
 
 ## Stores
@@ -129,7 +137,8 @@ Le système de routage est géré par svelte-spa-router :
 src/
 ├── routes.js            # Configuration des routes de l'application
 └── routes/
-    └── index.svelte     # Composant de la page d'accueil
+    ├── index.svelte     # Composant de la page d'accueil
+    └── demo.svelte      # Page de démonstration pour Jitsi Meet
 ```
 
 ## Modèle de données
@@ -286,3 +295,41 @@ makeSelfAdmin()
 - Un store dérivé `isAdmin` permet de vérifier facilement si l'utilisateur actuel est un administrateur.
 - Les fonctionnalités d'administration sont conditionnellement affichées dans l'interface utilisateur.
 - Des vérifications de sécurité sont effectuées côté serveur pour empêcher les accès non autorisés.
+
+## Intégration avec Jitsi Meet
+
+L'application intègre Jitsi Meet pour la visioconférence en utilisant leur API externe :
+
+### Configuration
+
+```javascript
+// Dans config.js
+export const jitsiConfig = {
+  domain: import.meta.env.VITE_JITSI_DOMAIN || 'meet.jit.si',
+  roomPrefix: import.meta.env.VITE_JITSI_ROOM_PREFIX || 'teamvisio-',
+  options: {
+    // Options pour l'interface et le comportement de Jitsi Meet
+  }
+};
+```
+
+### API et intégration
+
+- L'API Jitsi Meet est chargée dynamiquement par le module `src/lib/jitsi/index.js` lors de son utilisation.
+- Le composant `JitsiRoom.svelte` encapsule la logique d'intégration et synchronise les participants avec Firestore.
+- La synchronisation entre les salles Firestore et Jitsi est assurée par les fonctions `joinRoom` et `leaveRoom`.
+
+### Flux de fonctionnement
+
+1. Le composant `JitsiRoom` est initialisé avec un ID de salle Firestore.
+2. Le composant charge dynamiquement le script Jitsi si nécessaire.
+3. Une instance de l'API Jitsi est créée et configure la visioconférence avec les options appropriées.
+4. Les participants sont automatiquement ajoutés/supprimés de la liste dans Firestore lors des entrées/sorties.
+5. Lors de la destruction du composant, les ressources sont libérées et l'utilisateur est retiré de la liste des participants.
+
+### Variables d'environnement
+
+```
+VITE_JITSI_DOMAIN      # Domaine du serveur Jitsi Meet (défaut: meet.jit.si)
+VITE_JITSI_ROOM_PREFIX # Préfixe pour les noms de salles (défaut: teamvisio-)
+```

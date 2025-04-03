@@ -255,3 +255,43 @@
 - Les messages d'erreur ont été améliorés pour guider l'utilisateur en cas de problème
 - Les utilisateurs doivent se reconnecter après être devenus administrateurs pour que les changements prennent effet
 - La structure de type pour les messages de succès a été corrigée pour utiliser un booléen pour l'état et une chaîne pour le message
+
+## Étape 10 : Configuration de Jitsi Meet pour la communication (TERMINÉE)
+
+**Date :** 5 avril 2025
+
+### Tâches accomplies
+- Création d'une configuration Jitsi Meet dans `config.js` avec des options par défaut :
+  - Utilisation de l'instance publique `meet.jit.si` comme serveur par défaut
+  - Configuration d'un préfixe pour les salles (`teamvisio-`) pour éviter les collisions
+  - Personnalisation de l'interface avec des options adaptées au projet
+- Développement d'un module `jitsi/index.js` avec des fonctions utilitaires :
+  - `loadJitsiScript` : charge dynamiquement le script de l'API Jitsi Meet
+  - `initJitsiMeet` : initialise une session de visioconférence avec les options appropriées
+  - `disposeJitsiMeet` : libère les ressources après utilisation
+  - `generateRoomName` : génère un nom de salle unique basé sur l'ID Firestore
+- Création d'un composant `JitsiRoom.svelte` pour intégrer la visioconférence dans l'application :
+  - Gestion automatique du cycle de vie de la visioconférence
+  - Synchronisation avec Firestore pour rejoindre/quitter les salles
+  - États de chargement, d'erreur et interface utilisateur adaptée
+  - Options pour rejoindre automatiquement ou manuellement une salle
+- Développement d'une page de démonstration `demo.svelte` pour tester l'intégration de Jitsi Meet
+- Ajout d'un lien vers la page de démonstration depuis la page d'accueil en mode développement
+
+### Tests
+- Création de tests unitaires pour le module Jitsi Meet vérifiant :
+  - La génération correcte des noms de salles
+  - La détection de l'API Jitsi Meet dans le navigateur
+  - Le chargement dynamique du script de l'API
+- Test manuel de la visioconférence dans différents scénarios :
+  - Utilisateur connecté avec informations personnelles
+  - Utilisateur anonyme sans informations
+  - Rejoindre et quitter une salle
+  - Comportement en cas d'erreur
+
+### Notes
+- L'intégration utilise l'instance publique de Jitsi Meet, ce qui est suffisant pour les tests mais peut nécessiter une instance privée pour la production
+- Les participants sont synchronisés avec Firestore, permettant de connaître qui est présent dans une salle
+- L'interface de Jitsi Meet a été simplifiée pour n'afficher que les boutons les plus utiles
+- Le composant est conçu pour être facilement intégré dans n'importe quelle page de l'application
+- Les tests unitaires utilisent des mocks pour simuler le comportement de l'API Jitsi Meet, qui n'est disponible que dans le navigateur

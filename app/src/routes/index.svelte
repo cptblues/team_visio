@@ -130,6 +130,13 @@
         {#if $isLoggedIn}
           <MakeAdmin />
         {/if}
+        
+        <!-- Lien vers la page de démonstration Jitsi Meet -->
+        <div class="demo-link-container">
+          <h3>Démonstration Jitsi Meet</h3>
+          <p>Cliquez sur le lien ci-dessous pour tester l'intégration de Jitsi Meet.</p>
+          <a href="/demo" class="demo-link">Voir la démo Jitsi Meet</a>
+        </div>
       </div>
     {/if}
   </main>
@@ -218,6 +225,36 @@
   .error {
     background-color: var(--error-light);
     color: var(--error-dark);
+  }
+  
+  .demo-link-container {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: var(--background);
+    border-radius: 0.5rem;
+    border: 1px solid var(--primary-light);
+  }
+  
+  .demo-link-container h3 {
+    color: var(--primary);
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+  }
+  
+  .demo-link {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+  
+  .demo-link:hover {
+    background-color: var(--primary-dark);
   }
   
   @media (max-width: 768px) {
