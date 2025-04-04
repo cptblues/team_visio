@@ -207,12 +207,8 @@
   input[type="number"],
   textarea {
     padding: 0.75rem;
-    border: 1px solid var(--border);
     border-radius: 0.25rem;
-    background-color: var(--background);
-    color: var(--foreground);
     font-family: inherit;
-    transition: border-color 0.2s;
   }
   
   input[type="text"]:focus,

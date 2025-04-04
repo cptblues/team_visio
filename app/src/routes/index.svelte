@@ -120,11 +120,6 @@
 </div>
 
 <style>
-  :global(:root) {
-    /* Importer les styles globaux */
-    @import '../styles/global.css';
-  }
-  
   .app-container {
     display: flex;
     flex-direction: column;

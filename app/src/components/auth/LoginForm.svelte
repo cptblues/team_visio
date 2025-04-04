@@ -123,13 +123,8 @@
   }
   
   input {
-    width: 100%;
     padding: 0.85rem 1rem;
-    border: 2px solid var(--border);
     border-radius: var(--radius-md);
-    font-size: 1rem;
-    transition: var(--transition);
-    background-color: var(--background);
   }
   
   input:focus {

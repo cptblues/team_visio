@@ -1,6 +1,4 @@
 <script>
-  import { environment, isConfigValid } from '../lib/config';
-  import { firebaseApp } from '../lib/firebase';
   import { isLoggedIn, currentUser, logout } from '../stores/userStore';
   import { push, location, link } from 'svelte-spa-router';
   import { onMount } from 'svelte';
@@ -12,11 +10,6 @@
   let isMenuOpen = false;
   let scrolled = false;
   let logoUrl = '/images/logo.svg';
-  
-  // Fonction pour basculer le menu mobile
-  function toggleMobileMenu() {
-    mobileMenuOpen = !mobileMenuOpen;
-  }
   
   // Fonction pour basculer l'état du menu mobile
   function toggleMenu() {
@@ -68,9 +61,11 @@
     
     <nav class:open={isMenuOpen}>
       <ul class="nav-links">
-        <li><a href="/" use:link class:active={isActive('/')} on:click={() => isMenuOpen = false}>Accueil</a></li>
-        <li><a href="/rooms" use:link class:active={isActive('/rooms')} on:click={() => isMenuOpen = false}>Salles</a></li>
+        {#if !isActive('/')}
+          <li><a href="/" use:link class:active={isActive('/')} on:click={() => isMenuOpen = false}>Accueil</a></li>
+        {/if}
         {#if $isLoggedIn}
+          <li><a href="/rooms" use:link class:active={isActive('/rooms')} on:click={() => isMenuOpen = false}>Salles</a></li>
           <li class="user-menu">
             <div class="user-info">
               <img 

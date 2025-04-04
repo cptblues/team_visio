@@ -145,11 +145,8 @@
   }
   
   input {
-    width: 100%;
     padding: 0.75rem;
-    border: 1px solid var(--border);
     border-radius: 0.25rem;
-    font-size: 1rem;
   }
   
   input:focus {

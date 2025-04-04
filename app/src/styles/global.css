@@ -139,6 +139,7 @@ input, textarea, select {
   margin-bottom: 1.25rem;
   transition: var(--transition);
   background-color: white;
+  color: var(--foreground);
 }
 
 input:focus, textarea:focus, select:focus {
