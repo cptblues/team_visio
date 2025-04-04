@@ -64,6 +64,7 @@ team_visio/
 - **src/lib/firebase/firestore.js** : Fonctions CRUD génériques pour interagir avec Firestore et définition des collections.
 - **src/lib/firebase/auth.js** : Fonctions pour gérer l'authentification des utilisateurs (inscription, connexion, déconnexion).
 - **src/lib/firebase/rooms.js** : Fonctions spécifiques pour gérer les salles dans l'application.
+- **src/lib/firebase/halls.js** : Fonctions spécifiques pour gérer les halls (espaces regroupant des salles).
 - **src/lib/firebase/admin.js** : Fonctions d'administration pour gérer les droits des utilisateurs.
 - **src/lib/firebase/seedData.js** : Fonctions d'initialisation de données pour le développement.
 
@@ -78,6 +79,7 @@ team_visio/
 - **src/tests/config.test.js** : Tests unitaires pour la configuration.
 - **src/tests/firebase.test.js** : Tests unitaires pour l'initialisation de Firebase.
 - **src/tests/firestore.test.js** : Tests unitaires pour les fonctions Firestore.
+- **src/tests/halls.test.js** : Tests unitaires pour les fonctions de gestion des halls.
 - **src/tests/RoomList.test.js** : Tests unitaires pour le composant de liste des salles.
 - **src/tests/AdminRoomManager.test.js** : Tests unitaires pour le gestionnaire admin.
 - **src/tests/HomePage.test.js** : Tests unitaires pour la page d'accueil.
@@ -172,6 +174,21 @@ Stocke les informations des salles.
   createdAt: Timestamp,  // Date de création de la salle
   updatedAt: Timestamp,  // Date de dernière modification
   conferenceActive: Boolean // Si une visioconférence est active dans cette salle
+}
+```
+
+### Collection `halls`
+
+Stocke les informations des halls (espaces regroupant des salles).
+
+```javascript
+{
+  creatorId: String,     // ID de l'utilisateur créateur
+  description: String,   // Description textuelle du hall
+  roomLimit: Number,     // Nombre maximum de salles de réunion (par défaut 3)
+  invitedUsers: Array,   // Liste d'IDs ou emails des utilisateurs invités
+  createdAt: Timestamp,  // Date de création du hall
+  updatedAt: Timestamp   // Date de dernière modification
 }
 ```
 

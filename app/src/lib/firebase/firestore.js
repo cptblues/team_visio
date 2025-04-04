@@ -22,7 +22,8 @@ import { db } from './index';
 export const COLLECTIONS = {
   USERS: 'users',
   ROOMS: 'rooms',
-  SETTINGS: 'settings'
+  SETTINGS: 'settings',
+  HALLS: 'halls'
 };
 
 // Fonctions utilitaires pour les collections

@@ -1,189 +1,153 @@
-## Plan d'implémentation étape par étape
-
-### Étape 1 : Préparer l'environnement de développement (PRIORITAIRE)
-- **Instructions** :
-  - Installer Node.js et npm sur votre machine.
-  - Créer un nouveau projet SvelteKit via une commande dans le terminal.
-  - Ajouter la dépendance Firebase au projet via npm.
-  - Configurer Jest ou Vitest pour les tests automatisés.
-- **Test** :
-  - **Manuel** : Lancer le projet avec la commande de développement et vérifier que le serveur local démarre sans erreur en accédant à l'URL affichée dans le terminal.
-  - **Automatisé** : Créer un test simple qui vérifie que l'application se lance correctement.
+Voici un plan détaillé d’implémentation pour Cursor AI, en priorisant la création et la gestion des halls. Ce plan est conçu pour respecter votre stack actuel (Svelte, Firebase, Jitsi) avec des étapes petites, testables et documentées. Chaque étape inclut des tests unitaires et d’intégration, ainsi qu’une mise à jour du fichier de progression et de l’architecture.
 
 ---
 
-### Étape 2 : Configurer les comptes externes (PRIORITAIRE)
-- **Instructions** :
-  - Créer un compte sur Firebase et démarrer un nouveau projet.
-  - Ajouter les clés API de Firebase dans un fichier de variables d'environnement au niveau du projet.
-  - Préparer deux versions de ces fichiers : une pour l'environnement de test et une pour la production.
-  - **Note** : Aucun compte externe n'est requis pour Jitsi Meet, car nous utiliserons l'instance publique gratuite meet.jit.si pour les tests initiaux.
-- **Test** :
-  - **Manuel** : Afficher une des variables d'environnement dans la console via un message temporaire et vérifier qu'elle apparaît correctement lors du lancement du projet.
-  - **Automatisé** : Créer un test qui vérifie que les variables d'environnement sont correctement chargées.
+## Plan d’Implémentation pour la Création et Gestion des Halls
+
+### Objectif Général
+Permettre aux utilisateurs authentifiés de créer un hall (espace regroupant des salles) et de le gérer, en devenant modérateur, tout en respectant les contraintes existantes.
+
+### Prérequis
+- L’utilisateur doit être authentifié via Firebase Authentication.
+- Un utilisateur ne peut créer qu’un seul hall à la fois.
 
 ---
 
-### Étape 3 : Initialiser Firebase dans le projet (PRIORITAIRE)
-- **Instructions** :
-  - Créer un fichier dans le dossier des utilitaires pour gérer Firebase.
-  - Configurer Firebase en utilisant les variables d'environnement pour connecter le projet à Firestore et à l'authentification.
-  - Préparer trois collections dans Firestore : `users`, `rooms`, et `settings`.
-  - Définir la structure des documents utilisateurs incluant un champ `isAdmin` (booléen).
-- **Test** :
-  - **Manuel** : Ajouter manuellement un document dans la collection des utilisateurs via la console Firebase, puis vérifier que ce document est bien visible dans l'interface de Firebase.
-  - **Automatisé** : Créer un test qui vérifie la connexion à Firebase et la capacité à lire/écrire dans les collections.
+### Étape 1 : Modélisation des Halls dans Firestore
+**Description** : Mettre en place la structure des données pour les halls dans Firestore.
+
+**Tâches** :
+- Créer une collection `halls` avec les champs suivants :
+  - `creatorId` : ID de l’utilisateur créateur (chaîne).
+  - `description` : Description textuelle du hall (chaîne).
+  - `roomLimit` : Nombre maximum de salles de réunion (entier, par défaut 3).
+  - `invitedUsers` : Liste d’IDs ou emails des utilisateurs invités (tableau, vide par défaut).
+- Ajouter une sous-collection `rooms` vide pour chaque hall (sera remplie plus tard).
+
+**Tests** :
+- **Unitaire** : Vérifier qu’un hall peut être créé avec les champs obligatoires (`creatorId`, `description`).
+- **Intégration** : Ajouter un hall via l’API Firestore et confirmer que les données sont correctement enregistrées.
+
+**Documentation** :
+- Ajouter une entrée dans le fichier de progression : "Collection `halls` créée avec champs de base."
+- Mettre à jour l’architecture avec un schéma de la collection `halls`.
 
 ---
 
-### Étape 4 : Mettre en place une page d'accueil simple (PRIORITAIRE)
-- **Instructions** :
-  - Créer une page d'accueil dans le dossier des routes avec un titre et un message de bienvenue statique.
-  - S'assurer que cette page est accessible à la racine de l'application.
-  - Utiliser une palette de couleurs douces avec des tons pastel pour l'interface.
-  - Mettre en place un design responsive de base (PC en priorité, mobile secondaire).
-- **Test** :
-  - **Manuel** : Lancer le projet et vérifier que la page d'accueil s'affiche avec le titre et le message prévus dans le navigateur.
-  - **Automatisé** : Créer un test pour vérifier que les composants de la page d'accueil se chargent correctement.
+### Étape 2 : Vérification des Halls Existants
+**Description** : S’assurer qu’un utilisateur ne peut créer qu’un seul hall actif.
+
+**Tâches** :
+- Implémenter une fonction `checkUserHall` qui interroge Firestore pour vérifier si un hall avec `creatorId` correspondant existe déjà.
+- Retourner une erreur si un hall actif est trouvé.
+
+**Tests** :
+- **Unitaire** : Tester `checkUserHall` avec un utilisateur sans hall (retourne faux) et avec un hall existant (retourne vrai).
+- **Intégration** : Simuler une tentative de création d’un second hall et vérifier que l’opération est bloquée.
+
+**Documentation** :
+- Ajouter dans le fichier de progression : "Vérification d’unicité du hall par utilisateur implémentée."
+- Mettre à jour l’architecture avec la logique de vérification dans le flux de création.
 
 ---
 
-### Étape 5 : Ajouter l'authentification de base (PRIORITAIRE)
-- **Instructions** :
-  - Créer un composant dans le dossier des composants pour gérer la connexion et l'inscription.
-  - Configurer ce composant pour utiliser les services d'authentification Firebase avec email et mot de passe.
-  - Afficher un formulaire simple avec des champs pour l'email et le mot de passe sur la page d'accueil.
-  - Prévoir un mécanisme pour définir les administrateurs dans la base de données.
-- **Test** :
-  - **Manuel** : Tester l'inscription avec un email et un mot de passe fictifs, puis vérifier que l'utilisateur apparaît dans la section Authentification de la console Firebase.
-  - **Automatisé** : Créer un test qui simule le processus d'authentification et vérifie que l'état de l'utilisateur est correctement mis à jour.
+### Étape 3 : Interface de Création de Hall
+**Description** : Ajouter une interface Svelte pour créer un hall.
+
+**Tâches** :
+- Créer un composant `CreateHall.svelte` avec un formulaire contenant :
+  - Champ `description` (texte).
+  - Bouton "Créer".
+- Appeler `checkUserHall` avant création et afficher une erreur si nécessaire.
+- Envoyer les données à Firestore via une fonction `createHall`.
+
+**Tests** :
+- **Unitaire** : Tester que le formulaire soumet les données correctement.
+- **Intégration** : Simuler la création d’un hall et vérifier son enregistrement dans Firestore.
+
+**Documentation** :
+- Ajouter au fichier de progression : "Composant `CreateHall.svelte` ajouté pour la création de halls."
+- Mettre à jour l’architecture avec le nouveau composant et son lien avec Firestore.
 
 ---
 
-### Étape 7 : Afficher une liste statique de salles
-- **Instructions** :
-  - Ajouter une section sur la page d'accueil pour afficher une liste de salles codée en dur (exemple : " Salle 1 ", " Salle 2 ").
-  - Styliser cette liste pour la rendre claire et cliquable, en utilisant la palette de couleurs pastel définie.
-  - Prévoir une indication visuelle que les salles sont publiques par défaut.
-- **Test** :
-  - **Manuel** : Vérifier que la liste s'affiche correctement sur la page d'accueil et que les éléments sont visibles et bien formatés dans le navigateur.
-  - **Automatisé** : Créer un test pour vérifier que le composant de liste de salles se charge correctement avec des données statiques.
+### Étape 4 : Affichage du Hall Actif
+**Description** : Permettre à l’utilisateur de voir son hall actif après création.
+
+**Tâches** :
+- Créer un composant `HallDashboard.svelte` affichant :
+  - La description du hall.
+  - Un message si aucun hall n’existe.
+- Récupérer les données du hall via une requête Firestore basée sur `creatorId`.
+
+**Tests** :
+- **Unitaire** : Tester que le composant affiche correctement les données mockées.
+- **Intégration** : Vérifier que le tableau de bord reflète les données réelles après création.
+
+**Documentation** :
+- Ajouter au fichier de progression : "Tableau de bord du hall ajouté via `HallDashboard.svelte`."
+- Mettre à jour l’architecture avec le composant et le flux de données.
 
 ---
 
-### Étape 8 : Connecter la liste des salles à Firestore
-- **Instructions** :
-  - Modifier la page d'accueil pour récupérer les salles depuis la collection Firestore en temps réel.
-  - Remplacer la liste statique par les données dynamiques de Firestore.
-  - Inclure dans le schéma des salles des propriétés comme `isPublic` (booléen, true par défaut) et `createdBy` (ID de l'utilisateur).
-- **Test** :
-  - **Manuel** : Ajouter une salle manuellement dans Firestore via la console, puis vérifier que cette salle apparaît automatiquement dans la liste sur la page d'accueil.
-  - **Automatisé** : Créer un test qui vérifie que la liste des salles se met à jour automatiquement lorsque des données changent dans Firestore.
+### Étape 5 : Ajout de Salles dans le Hall
+**Description** : Permettre au créateur d’ajouter des salles de réunion dans son hall.
+
+**Tâches** :
+- Ajouter un formulaire dans `HallDashboard.svelte` pour créer une salle avec :
+  - `name` : Nom de la salle (chaîne).
+  - `capacity` : Capacité maximale (entier).
+  - `type` : "meeting" (fixe pour cette étape).
+- Enregistrer la salle dans la sous-collection `rooms` du hall.
+- Vérifier que le nombre de salles ne dépasse pas `roomLimit`.
+
+**Tests** :
+- **Unitaire** : Tester la fonction de création de salle avec des données valides et invalides (limite dépassée).
+- **Intégration** : Ajouter une salle et vérifier son enregistrement dans Firestore.
+
+**Documentation** :
+- Ajouter au fichier de progression : "Gestion des salles de réunion ajoutée dans le hall."
+- Mettre à jour l’architecture avec la sous-collection `rooms`.
 
 ---
 
-### Étape 9 : Permettre la création et gestion de salles pour les administrateurs
-- **Instructions** :
-  - Ajouter un champ de texte et un bouton sur la page d'accueil pour créer une nouvelle salle, visible uniquement pour les utilisateurs administrateurs.
-  - Configurer une action pour ajouter une nouvelle salle dans Firestore avec un nom, le statut public/privé et l'ID de l'administrateur.
-  - Ajouter la possibilité pour les administrateurs de supprimer des salles ou de modifier leurs paramètres.
-- **Test** :
-  - **Manuel** : Se connecter en tant qu'administrateur, créer une salle, la modifier, puis la supprimer, et vérifier que ces actions sont reflétées dans l'interface et dans Firestore.
-  - **Automatisé** : Créer un test qui vérifie les autorisations et les opérations CRUD pour les salles selon le rôle de l'utilisateur.
+### Étape 6 : Salle d’Attente Automatique
+**Description** : Ajouter une salle d’attente par défaut lors de la création d’un hall.
+
+**Tâches** :
+- Modifier `createHall` pour ajouter automatiquement une salle dans `rooms` avec :
+  - `type` : "waiting".
+  - `name` : "Salle d’attente".
+  - `capacity` : Illimitée (ou valeur par défaut élevée).
+- S’assurer que cette salle est créée en même temps que le hall.
+
+**Tests** :
+- **Unitaire** : Vérifier que la salle d’attente est incluse dans les données mockées.
+- **Intégration** : Créer un hall et confirmer la présence de la salle d’attente dans Firestore.
+
+**Documentation** :
+- Ajouter au fichier de progression : "Salle d’attente créée automatiquement avec chaque hall."
+- Mettre à jour l’architecture avec la logique de création automatique.
 
 ---
 
-### Étape 10 : Configurer Jitsi Meet pour la communication (PRIORITAIRE)
-- **Instructions** :
-  - Utiliser l'instance publique de Jitsi Meet (meet.jit.si) pour les tests initiaux afin d'éviter les coûts d'hébergement.
-  - Intégrer le SDK Jitsi Meet dans votre projet Svelte via npm ou en incluant le script externe.
-  - Créer un fichier dans le dossier des utilitaires pour gérer la configuration de Jitsi Meet (ex. domaine, options de base comme la désactivation du chat si non nécessaire).
-  - Préparer une fonction pour générer un lien de salle Jitsi Meet basé sur l'ID de la salle dans votre application.
-- **Test** :
-  - **Manuel** : Appeler la fonction avec un ID de salle fictif et vérifier que le lien généré pointe vers une salle Jitsi Meet valide.
-  - **Automatisé** : Créer un test qui vérifie la génération correcte du lien de la salle.
+### Étape 7 : Gestion des Salles (Modification et Suppression)
+**Description** : Permettre au créateur de modifier ou supprimer des salles existantes.
+
+**Tâches** :
+- Ajouter des boutons "Modifier" et "Supprimer" à côté de chaque salle dans `HallDashboard.svelte`.
+- Implémenter des fonctions `updateRoom` et `deleteRoom` pour interagir avec Firestore.
+- Restreindre la suppression à toutes les salles sauf la salle d’attente.
+
+**Tests** :
+- **Unitaire** : Tester `updateRoom` et `deleteRoom` avec des cas limites (ex. tentative de supprimer la salle d’attente).
+- **Intégration** : Modifier/supprimer une salle et vérifier les mises à jour dans Firestore.
+
+**Documentation** :
+- Ajouter au fichier de progression : "Modification et suppression des salles implémentées."
+- Mettre à jour l’architecture avec les nouvelles interactions Firestore.
 
 ---
 
-### Étape 11 : Créer une page pour les salles (PRIORITAIRE)
-- **Instructions** :
-  - Ajouter une nouvelle page dans le dossier des routes pour afficher les détails d'une salle spécifique.
-  - Faire en sorte que cliquer sur une salle dans la liste redirige vers cette page avec l'identifiant de la salle.
-  - Afficher les informations de la salle comme son nom, son statut (public/privé), et la liste des participants actuels (si disponible via Firebase).
-  - Intégrer un iframe ou le composant Jitsi Meet pour afficher la vidéoconférence directement dans la page.
-- **Test** :
-  - **Manuel** : Cliquer sur une salle dans la liste et vérifier que la nouvelle page s'ouvre avec l'identifiant de la salle affiché dans l'URL ou sur la page, et que la vidéoconférence Jitsi Meet se charge.
-  - **Automatisé** : Créer un test qui vérifie le routage et l'affichage correct des informations de la salle, ainsi que le chargement de l'iframe ou du composant Jitsi Meet.
-
----
-
-### Étape 12 : Intégrer Jitsi Meet dans les salles (PRIORITAIRE)
-- **Instructions** :
-  - Sur la page des salles, configurer le composant Jitsi Meet pour se connecter automatiquement à la salle correspondante en utilisant l'ID de la salle.
-  - Passer des options pour activer l'audio et la vidéo par défaut pour l'utilisateur qui rejoint la salle.
-  - Afficher une grille des participants avec leur flux audio/vidéo via l'interface de Jitsi Meet.
-  - Respecter les éventuelles limites de participants définies dans les paramètres de la salle (note : Jitsi Meet n'a pas de limite stricte, mais la performance peut varier).
-- **Test** :
-  - **Manuel** : Ouvrir la page d'une salle avec deux navigateurs (ou onglets) connectés avec des comptes différents, et vérifier que l'audio et la vidéo fonctionnent entre eux via Jitsi Meet.
-  - **Automatisé** : Créer un test qui vérifie que le composant Jitsi Meet est correctement initialisé avec les bons paramètres.
-
----
-
-### Étape 13 : Ajouter un bouton pour quitter la salle
-- **Instructions** :
-  - Ajouter un bouton sur la page des salles pour quitter la salle et revenir à la page d'accueil.
-  - S'assurer que quitter la salle arrête proprement la session Jitsi Meet (en détruisant l'instance ou en rechargeant la page).
-  - Mettre à jour le statut de présence de l'utilisateur dans la base de données Firebase.
-- **Test** :
-  - **Manuel** : Rejoindre une salle, cliquer sur le bouton quitter, et vérifier que vous revenez à la page d'accueil sans erreur dans la console.
-  - **Automatisé** : Créer un test qui vérifie que les ressources sont correctement libérées et que l'utilisateur est redirigé vers la page d'accueil.
-
----
-
-### Étape 14 : Gérer les autorisations et la confidentialité
-- **Instructions** :
-  - Puisque Jitsi Meet est utilisé via une instance publique, informer les utilisateurs que les données transitent par meet.jit.si.
-  - Pour les salles privées, générer des noms de salle aléatoires ou utiliser des mots de passe pour limiter l'accès.
-  - Ajouter une option pour que les administrateurs puissent définir un mot de passe pour les salles privées.
-- **Test** :
-  - **Manuel** : Créer une salle privée avec un mot de passe et vérifier que seuls les utilisateurs avec le mot de passe peuvent rejoindre la salle via Jitsi Meet.
-  - **Automatisé** : Créer un test qui vérifie la génération correcte des liens de salle avec mot de passe.
-
----
-
-### Étape 15 : Configurer le déploiement pour tests et production
-- **Instructions** :
-  - Configurer un environnement de test gratuit ou à faible coût (GitHub Pages, Netlify, Vercel).
-  - Mettre en place une pipeline GitHub Actions pour le déploiement automatique.
-  - Configurer les variables d'environnement pour les environnements de test et de production.
-  - Documenter le processus de déploiement.
-- **Test** :
-  - **Manuel** : Effectuer un déploiement de test et vérifier que l'application fonctionne correctement dans l'environnement déployé.
-  - **Automatisé** : Créer un test qui vérifie que le processus de déploiement se déroule sans erreur.
-
----
-
-### Étape 16 : Créer une page d'administration dédiée (PRIORITAIRE)
-- **Instructions** :
-  - Créer une nouvelle page dans le dossier des routes (`admin.svelte`) pour centraliser toutes les fonctionnalités d'administration.
-  - Déplacer les fonctionnalités de gestion des salles depuis la page des salles vers cette nouvelle page d'administration.
-  - Implémenter un système d'onglets pour organiser les différentes sections administratives (salles, utilisateurs, paramètres).
-  - Ajouter un lien vers la page d'administration dans le menu principal, visible uniquement pour les utilisateurs administrateurs.
-  - Mettre en place des contrôles d'accès pour rediriger les utilisateurs non-administrateurs vers la page d'accueil.
-  - Intégrer les composants `AdminRoomManager` et `AddRoomForm` dans la section de gestion des salles.
-  - Préparer la structure pour les futures fonctionnalités d'administration (gestion des utilisateurs, paramètres).
-- **Test** :
-  - **Manuel** : Se connecter en tant qu'administrateur, naviguer vers la page d'administration, et vérifier que toutes les fonctionnalités de gestion des salles fonctionnent correctement.
-  - **Automatisé** : Créer un test (`AdminPage.test.js`) qui vérifie l'affichage conditionnel selon le statut de l'utilisateur, l'intégration des composants, et le fonctionnement du système d'onglets.
-
----
-
-## Extensions futures (post-MVP)
-
-### Fonctionnalités à développer ultérieurement
-- **Partage d'écran** : Ajouter la possibilité pour les utilisateurs de partager leur écran dans une salle via Jitsi Meet.
-- **Prise de notes** : Intégrer un outil collaboratif de prise de notes pendant les réunions.
-- **Personnalisation d'espace** : Permettre aux entreprises de personnaliser leur espace de communication.
-- **Amélioration mobile** : Optimiser l'expérience sur appareils mobiles.
-- **Notifications** : Ajouter un système de notifications pour les réunions ou activités importantes.
-- **Hébergement personnalisé** : Déployer une instance privée de Jitsi Meet pour plus de contrôle et de confidentialité.
+### Conclusion
+Ce plan en 7 étapes se concentre sur la création et la gestion des halls, en respectant votre stack (Svelte pour l’interface, Firebase pour les données, Jitsi à intégrer plus tard). Chaque étape est petite, testable avec des tests unitaires et d’intégration, et suivie d’une mise à jour du fichier de progression et de l’architecture. Les étapes suivantes pourraient inclure les invitations, l’intégration Jitsi, et la visualisation en temps réel, selon vos priorités.
