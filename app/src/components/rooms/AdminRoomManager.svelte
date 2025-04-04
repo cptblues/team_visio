@@ -10,6 +10,8 @@
     updateRoom, 
     deleteRoom 
   } from '../../lib/firebase/rooms';
+  import ConfirmModal from '../ui/ConfirmModal.svelte';
+  import { toasts } from '../../stores/toastStore';
   
   // État des salles
   let rooms = [];
@@ -21,6 +23,7 @@
   let editing = false;
   let currentRoom = null;
   let showConfirmDelete = false;
+  let showEditPanel = false;
   
   // Valeurs du formulaire
   let name = '';
@@ -67,9 +70,9 @@
     editing = false;
     currentRoom = null;
     showConfirmDelete = false;
+    showEditPanel = false;
     formError = null;
     formSuccess = false;
-    formSuccessMessage = '';
   }
   
   // Ouvrir le formulaire pour éditer une salle
@@ -81,8 +84,15 @@
     isPublic = room.isPublic;
     editing = true;
     showConfirmDelete = false;
+    showEditPanel = true;
     formError = null;
     formSuccess = false;
+  }
+  
+  // Fermer le volet d'édition
+  function closeEditPanel() {
+    showEditPanel = false;
+    resetForm();
   }
   
   // Traiter le formulaire de création/édition
@@ -111,11 +121,16 @@
         await updateRoom(currentRoom.id, roomData);
         formSuccess = true;
         formSuccessMessage = 'Salle mise à jour avec succès';
+        // Afficher un toast de succès
+        toasts.success('Salle mise à jour avec succès');
+        closeEditPanel();
       } else {
         // Créer une nouvelle salle
         await createRoom(roomData);
         formSuccess = true;
         formSuccessMessage = 'Salle créée avec succès';
+        // Afficher un toast de succès
+        toasts.success('Salle créée avec succès');
         resetForm();
       }
       
@@ -126,6 +141,8 @@
     } catch (err) {
       console.error('Erreur lors de la sauvegarde de la salle:', err);
       formError = `Erreur: ${err.message}`;
+      // Afficher un toast d'erreur
+      toasts.error(`Erreur: ${err.message}`);
     } finally {
       formLoading = false;
     }
@@ -140,17 +157,15 @@
     
     try {
       await deleteRoom(currentRoom.id);
-      formSuccess = true;
-      formSuccessMessage = 'Salle supprimée avec succès';
+      // Afficher un toast de succès
+      toasts.success(`La salle "${currentRoom.name}" a été supprimée avec succès`);
       resetForm();
       
-      // Réinitialiser le message de succès après un délai
-      setTimeout(() => {
-        formSuccess = false;
-      }, 3000);
     } catch (err) {
       console.error('Erreur lors de la suppression de la salle:', err);
       formError = `Erreur: ${err.message}`;
+      // Afficher un toast d'erreur
+      toasts.error(`Erreur lors de la suppression: ${err.message}`);
     } finally {
       formLoading = false;
       showConfirmDelete = false;
@@ -163,7 +178,8 @@
   }
   
   // Demander confirmation avant suppression
-  function promptDeleteRoom() {
+  function promptDeleteRoom(room) {
+    currentRoom = room;
     showConfirmDelete = true;
   }
   
@@ -205,188 +221,177 @@
       <p>{error}</p>
       <button class="btn btn-primary" on:click={() => window.location.reload()}>Réessayer</button>
     </div>
-  {:else}
-    <!-- Formulaire de création/édition de salle -->
-    <div class="admin-form-container">
-      <h3>{editing ? 'Modifier la salle' : 'Créer une nouvelle salle'}</h3>
-      
+  {/if}
+
+  <!-- Volet d'édition des salles -->
+  <div class="edit-panel {showEditPanel ? 'edit-panel-open' : ''}" aria-hidden={!showEditPanel}>
+    <div class="edit-panel-header">
+      <h3>{editing ? 'Modifier la salle' : 'Créer une salle'}</h3>
+      <button class="btn-close" on:click={closeEditPanel} aria-label="Fermer">×</button>
+    </div>
+    <div class="edit-panel-content">
       {#if formError}
         <div class="error-message">
           <p>{formError}</p>
         </div>
       {/if}
       
-      {#if formSuccess}
-        <div class="success-message">
-          <p>{formSuccessMessage}</p>
+      <form class="edit-form" on:submit|preventDefault={handleSubmit}>
+        <div class="form-group">
+          <label for="room-name">Nom de la salle*</label>
+          <input 
+            type="text" 
+            id="room-name" 
+            bind:value={name} 
+            placeholder="Nom de la salle"
+            required
+          />
         </div>
-      {/if}
-      
-      {#if showConfirmDelete}
-        <div class="confirm-delete">
-          <p>Êtes-vous sûr de vouloir supprimer cette salle ?</p>
-          <div class="form-actions">
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              on:click={cancelDelete}
-              disabled={formLoading}
-            >
-              Annuler
-            </button>
-            <button 
-              type="button" 
-              class="btn btn-danger"
-              on:click={confirmDeleteRoom}
-              disabled={formLoading}
-            >
-              {formLoading ? 'Suppression en cours...' : 'Supprimer définitivement'}
-            </button>
-          </div>
+        
+        <div class="form-group">
+          <label for="room-description">Description</label>
+          <textarea 
+            id="room-description" 
+            bind:value={description} 
+            placeholder="Description de la salle (optionnel)"
+            rows="3"
+          ></textarea>
         </div>
-      {:else}
-        <form on:submit|preventDefault={handleSubmit} class="admin-form">
-          <div class="form-group">
-            <label for="room-name">Nom de la salle*</label>
-            <input 
-              type="text" 
-              id="room-name" 
-              bind:value={name} 
-              placeholder="Entrez le nom de la salle"
-              required
-              disabled={formLoading}
-            />
-          </div>
-          
-          <div class="form-group">
-            <label for="room-description">Description</label>
-            <textarea 
-              id="room-description" 
-              bind:value={description} 
-              placeholder="Décrivez l'objectif de cette salle"
-              rows="3"
-              disabled={formLoading}
-            ></textarea>
-          </div>
-          
-          <div class="form-group">
-            <label for="room-capacity">Capacité (nombre max. de participants)</label>
-            <input 
-              type="number" 
-              id="room-capacity" 
-              bind:value={capacity} 
-              min="0"
-              disabled={formLoading}
-            />
-            <small>Laissez 0 pour une capacité illimitée</small>
-          </div>
-          
-          <div class="form-group checkbox-group">
-            <label>
-              <input 
-                type="checkbox" 
-                bind:checked={isPublic} 
-                disabled={formLoading}
-              />
-              Salle publique (accessible à tous)
-            </label>
-            <small>Si désactivé, seuls les utilisateurs invités pourront rejoindre la salle</small>
-          </div>
-          
-          <div class="form-actions">
-            {#if editing}
-              <button 
-                type="button" 
-                class="btn btn-danger" 
-                on:click={promptDeleteRoom}
-                disabled={formLoading}
-              >
-                Supprimer
-              </button>
-            {/if}
-            
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              on:click={resetForm}
-              disabled={formLoading}
-            >
-              {editing ? 'Annuler' : 'Réinitialiser'}
-            </button>
-            
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              disabled={formLoading || !name.trim()}
-            >
-              {formLoading 
-                ? (editing ? 'Mise à jour...' : 'Création...') 
-                : (editing ? 'Mettre à jour' : 'Créer')}
-            </button>
-          </div>
-        </form>
-      {/if}
+        
+        <div class="form-group">
+          <label for="room-capacity">Capacité (0 = illimité)</label>
+          <input 
+            type="number" 
+            id="room-capacity" 
+            bind:value={capacity} 
+            min="0" 
+            max="100"
+          />
+        </div>
+        
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" bind:checked={isPublic} />
+            Salle publique
+          </label>
+          <small>Les salles publiques sont visibles par tous les utilisateurs</small>
+        </div>
+        
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            on:click={closeEditPanel}
+            disabled={formLoading}
+          >
+            Annuler
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            disabled={formLoading}
+          >
+            {formLoading ? 'Chargement...' : (editing ? 'Mettre à jour' : 'Créer')}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Liste des salles existantes -->
+  <div class="admin-rooms-list">
+    <div class="admin-rooms-header">
+      <h3>Salles existantes ({rooms.length})</h3>
+      <button class="btn btn-primary" on:click={() => { editing = false; showEditPanel = true; }}>
+        Créer une salle
+      </button>
     </div>
     
-    <!-- Liste des salles existantes -->
-    <div class="admin-rooms-list">
-      <h3>Salles existantes ({rooms.length})</h3>
-      
-      {#if rooms.length === 0}
-        <div class="empty-state">
-          <p>Aucune salle n'a encore été créée.</p>
-        </div>
-      {:else}
-        <div class="admin-room-table-container">
-          <table class="admin-room-table">
-            <thead>
+    {#if rooms.length === 0}
+      <div class="empty-state">
+        <p>Aucune salle n'a encore été créée.</p>
+      </div>
+    {:else}
+      <div class="admin-room-table-container">
+        <table class="admin-room-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Statut</th>
+              <th>Capacité</th>
+              <th>Créée le</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each rooms as room (room.id)}
               <tr>
-                <th>Nom</th>
-                <th>Statut</th>
-                <th>Capacité</th>
-                <th>Créée le</th>
-                <th>Actions</th>
+                <td>
+                  <div class="room-name-cell">
+                    <span class="room-name">{room.name}</span>
+                    {#if room.description}
+                      <span class="room-description">{room.description}</span>
+                    {/if}
+                  </div>
+                </td>
+                <td>
+                  <span class="room-badge {room.isPublic ? 'public-badge' : 'private-badge'}">
+                    {room.isPublic ? 'Public' : 'Privé'}
+                  </span>
+                </td>
+                <td>{room.capacity || '∞'}</td>
+                <td>{formatDate(room.createdAt)}</td>
+                <td>
+                  <button 
+                    class="btn btn-small btn-primary" 
+                    on:click={() => editRoom(room)}
+                  >
+                    Modifier
+                  </button>
+                  <button 
+                    class="btn btn-small btn-danger" 
+                    on:click={() => promptDeleteRoom(room)}
+                  >
+                    Supprimer
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {#each rooms as room (room.id)}
-                <tr>
-                  <td>
-                    <div class="room-name-cell">
-                      <span class="room-name">{room.name}</span>
-                      {#if room.description}
-                        <span class="room-description">{room.description}</span>
-                      {/if}
-                    </div>
-                  </td>
-                  <td>
-                    <span class="room-badge {room.isPublic ? 'public-badge' : 'private-badge'}">
-                      {room.isPublic ? 'Public' : 'Privé'}
-                    </span>
-                  </td>
-                  <td>{room.capacity || '∞'}</td>
-                  <td>{formatDate(room.createdAt)}</td>
-                  <td>
-                    <button 
-                      class="btn btn-small btn-primary" 
-                      on:click={() => editRoom(room)}
-                    >
-                      Modifier
-                    </button>
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      {/if}
-    </div>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
+  </div>
+
+  <!-- Modale de confirmation de suppression -->
+  <ConfirmModal
+    isOpen={showConfirmDelete}
+    title="Confirmer la suppression"
+    message={currentRoom ? `Êtes-vous sûr de vouloir supprimer la salle "${currentRoom.name}" ? Cette action est irréversible.` : 'Êtes-vous sûr de vouloir supprimer cette salle ?'}
+    confirmText="Supprimer"
+    cancelText="Annuler"
+    confirmButtonClass="btn-danger"
+    onConfirm={confirmDeleteRoom}
+    onCancel={cancelDelete}
+  />
+  
+  <!-- Overlay pour le volet d'édition -->
+  {#if showEditPanel}
+    <div 
+      class="edit-panel-overlay" 
+      on:click={closeEditPanel}
+      on:keydown={(e) => e.key === 'Escape' && closeEditPanel()}
+      role="button"
+      tabindex="0"
+      aria-label="Fermer le volet d'édition"
+    ></div>
   {/if}
 </section>
 
 <style>
   .admin-room-manager {
     padding: 1rem 0;
+    position: relative;
   }
   
   .admin-header {
@@ -404,21 +409,77 @@
     font-size: 1.1rem;
   }
   
-  .admin-form-container {
+  .admin-rooms-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .admin-rooms-header h3 {
+    margin: 0;
+  }
+  
+  /* Volet d'édition */
+  .edit-panel {
+    position: fixed;
+    top: 0;
+    right: -450px;
+    width: 450px;
+    height: 100vh;
     background-color: var(--background);
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: right 0.3s ease;
+    overflow-y: auto;
   }
   
-  .admin-form-container h3 {
+  .edit-panel-open {
+    right: 0;
+  }
+  
+  .edit-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .edit-panel-header h3 {
+    margin: 0;
     color: var(--primary);
-    margin-top: 0;
-    margin-bottom: 1.5rem;
   }
   
-  .admin-form {
+  .btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--foreground-alt);
+    line-height: 1;
+    padding: 0;
+  }
+  
+  .btn-close:hover {
+    color: var(--foreground);
+  }
+  
+  .edit-panel-content {
+    padding: 1.5rem;
+  }
+  
+  .edit-panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 999;
+  }
+  
+  .edit-form {
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -483,13 +544,9 @@
     margin-top: 2rem;
   }
   
-  .admin-rooms-list h3 {
-    color: var(--primary);
-    margin-bottom: 1rem;
-  }
-  
   .admin-room-table-container {
     overflow-x: auto;
+    margin-top: 1rem;
   }
   
   .admin-room-table {
@@ -560,20 +617,6 @@
     background-color: var(--error-dark);
   }
   
-  .confirm-delete {
-    background-color: var(--error-light);
-    border-left: 4px solid var(--error);
-    padding: 1rem;
-    border-radius: 0.25rem;
-    margin-bottom: 1rem;
-  }
-  
-  .confirm-delete p {
-    margin-bottom: 1rem;
-    font-weight: 500;
-    color: var(--error-dark);
-  }
-  
   .loading-state, .empty-state {
     text-align: center;
     padding: 3rem;
@@ -606,12 +649,10 @@
     margin-bottom: 1rem;
   }
   
-  .success-message {
-    padding: 0.75rem;
-    background-color: var(--success-light);
-    color: var(--success-dark);
-    border-radius: 0.25rem;
-    border-left: 3px solid var(--success);
-    margin-bottom: 1rem;
+  @media (max-width: 768px) {
+    .edit-panel {
+      width: 100%;
+      right: -100%;
+    }
   }
 </style> 

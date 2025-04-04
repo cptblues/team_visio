@@ -25,12 +25,6 @@
           <button class="btn btn-outline" on:click={goToLogin}>S'inscrire</button>
         {/if}
       </div>
-      
-      {#if $currentUser}
-        <div class="user-welcome">
-          <p>Connecté en tant que <strong>{$currentUser.displayName || $currentUser.email}</strong></p>
-        </div>
-      {/if}
     </div>
     <div class="hero-image">
       <div class="placeholder-image">
@@ -72,6 +66,7 @@
   .cta-buttons {
     display: flex;
     gap: 1rem;
+    justify-content: center;
   }
   
   .btn {

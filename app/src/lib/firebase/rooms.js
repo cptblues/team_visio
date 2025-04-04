@@ -14,6 +14,8 @@ import {
   getCollection
 } from './firestore';
 import { auth } from './index';
+import { get } from 'svelte/store';
+import { isAdmin as isAdminStore } from '../../stores/userStore';
 
 /**
  * Crée une nouvelle salle dans Firestore
@@ -71,8 +73,10 @@ export async function updateRoom(roomId, updateData) {
   try {
     const roomData = await getDocument(COLLECTIONS.ROOMS, roomId);
     
-    // Vérifier si l'utilisateur est le créateur de la salle
-    if (roomData.createdBy !== auth.currentUser.uid) {
+    // Vérifier si l'utilisateur est le créateur de la salle ou administrateur
+    const isAdmin = get(isAdminStore);
+    console.log('isAdmin', isAdmin, auth.currentUser);
+    if (roomData.createdBy !== auth.currentUser.uid && !isAdmin) {
       throw new Error('Vous n\'avez pas les droits pour modifier cette salle');
     }
 
@@ -97,8 +101,9 @@ export async function deleteRoom(roomId) {
   try {
     const roomData = await getDocument(COLLECTIONS.ROOMS, roomId);
     
-    // Vérifier si l'utilisateur est le créateur de la salle
-    if (roomData.createdBy !== auth.currentUser.uid) {
+    // Vérifier si l'utilisateur est le créateur de la salle ou administrateur
+    const isAdmin = get(isAdminStore);
+    if (roomData.createdBy !== auth.currentUser.uid && !isAdmin) {
       throw new Error('Vous n\'avez pas les droits pour supprimer cette salle');
     }
 

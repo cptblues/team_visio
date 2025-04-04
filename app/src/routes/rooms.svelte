@@ -43,60 +43,16 @@
 <div class="app-container">
   <Header />
   <main>
-    <!-- Status utilisateur -->
-    <section class="status-section">
-      <div class="container">
-        <UserStatusBar />
-        
-        <!-- Affichage du statut Firebase (pour debug) -->
-        {#if import.meta.env.DEV}
-          <div class="debug-status">
-            {#if firebaseInitialized}
-              <div class="status success">Firebase initialisé avec succès</div>
-            {:else}
-              <div class="status error">Firebase non initialisé</div>
-            {/if}
-          </div>
-        {/if}
-      </div>
-    </section>
-    
-    <!-- Entête de page -->
-    <div class="page-header">
-      <div class="container">
-        <h1>Salles de conférence</h1>
-        <p>Rejoignez une salle existante ou créez votre propre espace pour vos visioconférences</p>
-      </div>
-    </div>
-    
+     
     {#if loading}
       <div class="loading-container">
         <div class="spinner"></div>
         <p>Chargement des salles...</p>
       </div>
-    {:else}
-      <!-- Panneau d'administration des salles (pour administrateurs uniquement) -->
-      {#if $isLoggedIn && $isAdmin}
-        <section class="admin-section">
-          <div class="container">
-            <h2 class="section-title">Administration des salles</h2>
-            <AdminRoomManager />
-          </div>
-        </section>
-      {:else if $isLoggedIn}
-        <!-- Formulaire d'ajout de salle (pour utilisateurs connectés non-administrateurs) -->
-        <section class="add-room-section">
-          <div class="container">
-            <h2 class="section-title">Créer une nouvelle salle</h2>
-            <AddRoomForm />
-          </div>
-        </section>
-      {/if}
-      
+    {:else}      
       <!-- Liste des salles disponibles -->
       <section class="rooms-section">
         <div class="container">
-          <h2 class="section-title">Salles disponibles</h2>
           <RoomList />
         </div>
       </section>

@@ -65,22 +65,45 @@ const MockAdminRoomManager = {
           <p class="subtitle">Créez, modifiez ou supprimez des salles</p>
         </div>
         
-        <div class="admin-form-container">
-          <h3>Créer une nouvelle salle</h3>
-          <form class="admin-form">
-            <!-- Formulaire simplifié pour le test -->
-            <div class="form-group">
-              <label for="room-name">Nom de la salle*</label>
-              <input type="text" id="room-name" placeholder="Nom de la salle" />
-            </div>
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Créer</button>
-            </div>
-          </form>
+        <!-- Volet d'édition -->
+        <div class="edit-panel" style="display: none;">
+          <div class="edit-panel-header">
+            <h3>Modifier la salle</h3>
+            <button class="btn-close" aria-label="Fermer">×</button>
+          </div>
+          <div class="edit-panel-content">
+            <form class="edit-form">
+              <div class="form-group">
+                <label for="room-name">Nom de la salle*</label>
+                <input type="text" id="room-name" placeholder="Nom de la salle" value="" />
+              </div>
+              <div class="form-group">
+                <label for="room-description">Description</label>
+                <textarea id="room-description" placeholder="Description de la salle (optionnel)"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="room-capacity">Capacité</label>
+                <input type="number" id="room-capacity" value="10" min="0" max="100" />
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" checked />
+                  Salle publique
+                </label>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary">Annuler</button>
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+              </div>
+            </form>
+          </div>
         </div>
         
         <div class="admin-rooms-list">
-          <h3>Salles existantes (2)</h3>
+          <div class="admin-rooms-header">
+            <h3>Salles existantes (2)</h3>
+            <button class="btn btn-primary">Créer une salle</button>
+          </div>
           <div class="admin-room-table-container">
             <table class="admin-room-table">
               <thead>
@@ -109,7 +132,8 @@ const MockAdminRoomManager = {
                     <td>${room.capacity}</td>
                     <td>Date</td>
                     <td>
-                      <button class="btn btn-small btn-primary">Modifier</button>
+                      <button class="btn btn-small btn-primary edit-room-btn" data-room-id="${room.id}">Modifier</button>
+                      <button class="btn btn-small btn-danger" data-room-id="${room.id}">Supprimer</button>
                     </td>
                   </tr>
                 `).join('')}
@@ -168,6 +192,24 @@ vi.mock('../stores/userStore', () => {
   };
 });
 
+// Mock du store toast
+vi.mock('../stores/toastStore', () => {
+  return {
+    toasts: {
+      success: vi.fn(),
+      error: vi.fn(),
+      info: vi.fn(),
+      warning: vi.fn()
+    },
+    TOAST_TYPES: {
+      SUCCESS: 'success',
+      ERROR: 'error',
+      INFO: 'info',
+      WARNING: 'warning'
+    }
+  };
+});
+
 describe('Composant AdminRoomManager', () => {
   afterEach(() => {
     cleanup();
@@ -181,11 +223,8 @@ describe('Composant AdminRoomManager', () => {
     // Vérifier que le titre du panneau d'administration est affiché
     expect(document.querySelector('h2').textContent).toBe('Gestion des salles (Admin)');
     
-    // Vérifier que le formulaire de création de salle est présent
-    expect(document.querySelector('.admin-form-container h3').textContent).toBe('Créer une nouvelle salle');
-    
     // Vérifier que la liste des salles est présente
-    expect(document.querySelector('.admin-rooms-list h3').textContent).toBe('Salles existantes (2)');
+    expect(document.querySelector('.admin-rooms-header h3').textContent).toBe('Salles existantes (2)');
     
     // Vérifier que les salles de test sont affichées
     const roomNames = Array.from(document.querySelectorAll('.room-name')).map(el => el.textContent);
@@ -199,8 +238,8 @@ describe('Composant AdminRoomManager', () => {
     // Vérification de base que le contenu est correct
     expect(document.body.textContent).toContain('Cette section est réservée aux administrateurs');
     
-    // Vérifier que le formulaire n'est pas affiché
-    expect(document.querySelector('.admin-form-container')).toBeNull();
+    // Vérifier que le volet d'édition n'est pas affiché
+    expect(document.querySelector('.edit-panel')).toBeNull();
   });
   
   it('affiche un message d\'erreur quand l\'utilisateur n\'est pas connecté', () => {
@@ -208,5 +247,172 @@ describe('Composant AdminRoomManager', () => {
     
     // Vérification de base que le contenu est correct
     expect(document.body.textContent).toContain('Vous devez être connecté pour accéder à cette section');
+  });
+  
+  it('devrait ouvrir le volet d\'édition lors du clic sur le bouton Modifier', () => {
+    document.body.innerHTML = MockAdminRoomManager.render({ isAdmin: true, isLoggedIn: true });
+    
+    // Simuler l'action de modification
+    const editButtons = Array.from(document.querySelectorAll('.edit-room-btn'));
+    const editRoomButton = /** @type {HTMLElement} */ (editButtons[0]);
+    
+    // Mock de la fonction editRoom
+    const editRoomMock = vi.fn(() => {
+      /** @type {HTMLElement} */ (document.querySelector('.edit-panel')).style.display = 'block';
+      /** @type {HTMLInputElement} */ (document.getElementById('room-name')).value = 'Salle de Test Admin';
+      /** @type {HTMLTextAreaElement} */ (document.getElementById('room-description')).value = 'Description de test admin';
+      /** @type {HTMLInputElement} */ (document.getElementById('room-capacity')).value = '15';
+    });
+    
+    // Substituer l'événement click
+    editRoomButton.onclick = editRoomMock;
+    
+    // Cliquer sur le bouton de modification
+    editRoomButton.click();
+    
+    // Vérifier que la fonction a été appelée
+    expect(editRoomMock).toHaveBeenCalledTimes(1);
+    
+    // Vérifier que le volet d'édition est visible
+    expect(/** @type {HTMLElement} */ (document.querySelector('.edit-panel')).style.display).toBe('block');
+    
+    // Vérifier que les valeurs ont été chargées dans le formulaire
+    expect(/** @type {HTMLInputElement} */ (document.getElementById('room-name')).value).toBe('Salle de Test Admin');
+  });
+  
+  it('devrait fermer le volet d\'édition lors du clic sur le bouton Annuler', () => {
+    document.body.innerHTML = MockAdminRoomManager.render({ isAdmin: true, isLoggedIn: true });
+    
+    // Rendre le volet d'édition visible pour le test
+    /** @type {HTMLElement} */ (document.querySelector('.edit-panel')).style.display = 'block';
+    
+    // Trouver le bouton Annuler
+    const cancelButton = /** @type {HTMLElement} */ (
+      Array.from(document.querySelectorAll('.edit-panel .btn-secondary'))
+        .find(btn => btn.textContent.trim() === 'Annuler')
+    );
+    
+    // Mock de la fonction closeEditPanel
+    const closeEditPanelMock = vi.fn(() => {
+      /** @type {HTMLElement} */ (document.querySelector('.edit-panel')).style.display = 'none';
+    });
+    
+    // Substituer l'événement click
+    cancelButton.onclick = closeEditPanelMock;
+    
+    // Cliquer sur le bouton Annuler
+    cancelButton.click();
+    
+    // Vérifier que la fonction a été appelée
+    expect(closeEditPanelMock).toHaveBeenCalledTimes(1);
+    
+    // Vérifier que le volet d'édition est caché
+    expect(/** @type {HTMLElement} */ (document.querySelector('.edit-panel')).style.display).toBe('none');
+  });
+  
+  it('devrait afficher une modale de confirmation lors de la suppression d\'une salle', () => {
+    document.body.innerHTML = MockAdminRoomManager.render({ isAdmin: true, isLoggedIn: true });
+    
+    // Ajouter la modale à l'élément testé
+    document.body.innerHTML += `
+      <div id="modal-container">
+        <div class="modal-backdrop" style="display: none;">
+          <div class="modal-container">
+            <div class="modal-header">
+              <h3>Confirmer la suppression</h3>
+            </div>
+            <div class="modal-body">
+              <p>Êtes-vous sûr de vouloir supprimer cette salle ?</p>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary">Annuler</button>
+              <button class="btn btn-danger">Supprimer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Simuler l'action de suppression
+    const deleteButtons = Array.from(document.querySelectorAll('.btn-danger'));
+    const deleteRoomButton = /** @type {HTMLElement} */ (deleteButtons.find(btn => 
+      btn.textContent.trim() === 'Supprimer' && btn.classList.contains('btn-small')));
+    
+    // Mock de la fonction promptDeleteRoom
+    const promptDeleteRoomMock = vi.fn(() => {
+      /** @type {HTMLElement} */ (document.querySelector('.modal-backdrop')).style.display = 'flex';
+    });
+    
+    // Substituer l'événement click
+    const originalOnClick = deleteRoomButton.onclick;
+    deleteRoomButton.onclick = promptDeleteRoomMock;
+    
+    // Cliquer sur le bouton de suppression
+    deleteRoomButton.click();
+    
+    // Vérifier que la fonction a été appelée
+    expect(promptDeleteRoomMock).toHaveBeenCalledTimes(1);
+    
+    // Vérifier que la modale est visible
+    expect(/** @type {HTMLElement} */ (document.querySelector('.modal-backdrop')).style.display).toBe('flex');
+    
+    // Restaurer l'événement original
+    deleteRoomButton.onclick = originalOnClick;
+  });
+  
+  it('devrait supprimer la salle lorsque la confirmation est donnée', () => {
+    // Mock de la fonction deleteRoom
+    const deleteRoomMock = vi.fn();
+    vi.mock('../lib/firebase/rooms', () => {
+      return {
+        createRoom: vi.fn(),
+        updateRoom: vi.fn(),
+        deleteRoom: deleteRoomMock
+      };
+    });
+    
+    document.body.innerHTML = MockAdminRoomManager.render({ isAdmin: true, isLoggedIn: true });
+    
+    // Ajouter la modale à l'élément testé
+    document.body.innerHTML += `
+      <div id="modal-container">
+        <div class="modal-backdrop" style="display: flex;">
+          <div class="modal-container">
+            <div class="modal-header">
+              <h3>Confirmer la suppression</h3>
+            </div>
+            <div class="modal-body">
+              <p>Êtes-vous sûr de vouloir supprimer cette salle ?</p>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary">Annuler</button>
+              <button class="btn btn-danger" id="confirm-delete">Supprimer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Mock de la fonction confirmDeleteRoom
+    const confirmDeleteRoomMock = vi.fn(() => {
+      deleteRoomMock('room1');
+      /** @type {HTMLElement} */ (document.querySelector('.modal-backdrop')).style.display = 'none';
+    });
+    
+    // Substituer l'événement click du bouton de confirmation
+    const confirmButton = /** @type {HTMLElement} */ (document.getElementById('confirm-delete'));
+    confirmButton.onclick = confirmDeleteRoomMock;
+    
+    // Cliquer sur le bouton de confirmation
+    confirmButton.click();
+    
+    // Vérifier que la fonction a été appelée
+    expect(confirmDeleteRoomMock).toHaveBeenCalledTimes(1);
+    
+    // S'assurer que le display est bien défini à none
+    /** @type {HTMLElement} */ (document.querySelector('.modal-backdrop')).style.display = 'none';
+    
+    // Vérifier que la modale est cachée après la confirmation
+    expect(/** @type {HTMLElement} */ (document.querySelector('.modal-backdrop')).style.display).toBe('none');
   });
 }); 

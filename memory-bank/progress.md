@@ -376,3 +376,36 @@
 - Les variables d'environnement sont gérées via des secrets GitHub pour maintenir la sécurité
 - Le processus de déploiement est entièrement automatisé, ne nécessitant aucune intervention manuelle
 - La documentation fournie permet à n'importe quel membre de l'équipe de comprendre et utiliser le processus de déploiement
+
+## Étape 16 : Création d'une page d'administration dédiée (TERMINÉE)
+
+**Date :** 4 mai 2025
+
+### Tâches accomplies
+- Création d'une nouvelle page dédiée `admin.svelte` pour centraliser toutes les fonctionnalités d'administration
+- Déplacement des fonctionnalités de gestion des salles depuis la page `rooms.svelte` vers la nouvelle page d'administration :
+  - Déplacement du composant `AdminRoomManager` vers la page d'administration
+  - Intégration du composant `AddRoomForm` pour permettre la création rapide de salles
+- Mise en place d'un système d'onglets de navigation dans l'interface d'administration pour :
+  - Gestion des salles (implémentée)
+  - Gestion des utilisateurs (préparé pour développement futur)
+  - Paramètres de la plateforme (préparé pour développement futur)
+- Ajout d'un lien vers la page d'administration dans le menu `Header.svelte`, visible uniquement pour les utilisateurs avec des droits d'administrateur
+- Mise en place de contrôles d'accès stricts pour rediriger les utilisateurs non-administrateurs vers la page d'accueil
+- Création d'un système de navigation interne à la page d'administration avec des états conditionnels
+
+### Tests
+- Création du fichier de test `AdminPage.test.js` pour valider :
+  - L'affichage correct de la page pour les administrateurs
+  - La redirection des utilisateurs non-connectés ou non-administrateurs
+  - L'intégration correcte des composants de gestion des salles
+  - Le fonctionnement du système d'onglets
+- Test de l'intégration avec les fonctionnalités existantes pour s'assurer qu'il n'y a pas de régression
+- Vérification que tous les tests existants continuent de fonctionner correctement
+
+### Notes
+- Cette nouvelle organisation améliore la séparation des préoccupations en isolant les fonctionnalités d'administration
+- La page d'administration est conçue pour être facilement extensible lorsque de nouvelles fonctionnalités seront ajoutées
+- L'interface utilisateur est réactive et s'adapte aux différentes tailles d'écran
+- La sécurité est renforcée par des contrôles d'accès à la fois côté client et dans les règles Firebase
+- La navigation conditionnelle dans le header améliore l'expérience utilisateur en n'affichant que les options pertinentes

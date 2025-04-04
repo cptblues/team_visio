@@ -351,7 +351,37 @@ VITE_FIREBASE_MEASUREMENT_ID
 
 L'application inclut un système d'administration permettant aux utilisateurs ayant le statut d'administrateur de gérer les salles et les utilisateurs :
 
+### Page d'administration
+
+Une page dédiée à l'administration est accessible uniquement aux utilisateurs ayant des droits d'administrateur :
+
+- **Route :** `/admin`
+- **Fichier :** `src/routes/admin.svelte`
+
+La page d'administration est structurée avec un système d'onglets pour organiser les différentes fonctionnalités :
+- **Gestion des salles** : Interface pour créer, modifier et supprimer des salles
+- **Gestion des utilisateurs** : Interface pour gérer les utilisateurs (fonctionnalité à développer)
+- **Paramètres** : Interface pour configurer les paramètres de la plateforme (fonctionnalité à développer)
+
+### Contrôle d'accès
+
+La page d'administration est protégée par plusieurs niveaux de sécurité :
+- Vérification côté client pour rediriger les utilisateurs non-administrateurs
+- Le lien vers la page d'administration n'est visible que pour les administrateurs
+- Sécurisation côté serveur via les règles Firebase
+
 ### Gestion des droits
 
 - **Module d'administration** : `src/lib/firebase/admin.js` fournit des fonctions pour gérer les droits d'administration.
-- **Composant de promotion** : `src/components/admin/MakeAdmin.svelte`
+- **Composant de promotion** : `src/components/admin/MakeAdmin.svelte` permet de promouvoir un utilisateur au statut d'administrateur (uniquement en développement).
+
+### Composants d'administration
+
+- **AdminRoomManager.svelte** : Interface complète pour la gestion des salles, incluant la création, la modification et la suppression.
+- **AddRoomForm.svelte** : Formulaire pour la création rapide de salles, utilisé dans la page d'administration.
+
+### Tests
+
+Les fonctionnalités d'administration sont couvertes par des tests spécifiques :
+- `src/tests/AdminRoomManager.test.js` : Valide le composant de gestion des salles
+- `src/tests/AdminPage.test.js` : Teste l'ensemble de la page d'administration, y compris l'accès conditionnel et l'intégration des composants

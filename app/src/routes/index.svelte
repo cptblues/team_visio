@@ -4,12 +4,9 @@
   import Features from '../components/Features.svelte';
   import Footer from '../components/Footer.svelte';
   import AuthContainer from '../components/auth/AuthContainer.svelte';
-  import UserProfile from '../components/auth/UserProfile.svelte';
   import { onMount } from 'svelte';
   import { initFirebase } from '../lib/firebase';
   import { initUserStore, isLoggedIn, currentUser } from '../stores/userStore';
-  import UserStatusBar from '../components/UserStatusBar.svelte';
-  import FirebaseDebugger from '../components/FirebaseDebugger.svelte';
   import MakeAdmin from '../components/admin/MakeAdmin.svelte';
   import { push } from 'svelte-spa-router';
   
@@ -53,34 +50,11 @@
   <main>
     <Hero onOpenAuth={toggleAuthSection} />
     
-    <!-- Status utilisateur -->
-    <section class="status-section">
-      <div class="container">
-        <UserStatusBar />
-        
-        <!-- Affichage du statut Firebase (pour debug) -->
-        {#if import.meta.env.DEV}
-          <div class="debug-status">
-            {#if firebaseInitialized}
-              <div class="status success">Firebase initialisé avec succès</div>
-            {:else}
-              <div class="status error">Firebase non initialisé</div>
-            {/if}
-          </div>
-        {/if}
-      </div>
-    </section>
-    
     <!-- Section authentification ou profil -->
     {#if showAuthSection || $currentUser}
       <section class="user-section">
         <div class="container">
-          {#if $currentUser}
-            <div class="profile-container">
-              <h2 class="section-title">Votre profil</h2>
-              <UserProfile />
-            </div>
-          {:else}
+          {#if !$currentUser}
             <AuthContainer onAuthSuccess={handleAuthSuccess} />
           {/if}
         </div>
@@ -88,33 +62,30 @@
     {/if}
     
     <!-- Bouton pour accéder au hall des salles -->
-    <section class="cta-section">
-      <div class="container">
-        <div class="cta-card">
-          <h2>Accédez au hall des salles</h2>
-          <p>Découvrez toutes les salles disponibles, créez vos propres salles ou rejoignez une conversation en cours.</p>
-          <button class="btn btn-primary btn-lg" on:click={goToRoomsPage}>
-            Explorer les salles
-            <span class="btn-icon">→</span>
-          </button>
+    {#if $currentUser && isLoggedIn}
+      <section class="cta-section">
+        <div class="container">
+          <div class="cta-card">
+            <h2>Accédez au hall des salles</h2>
+            <p>Découvrez toutes les salles disponibles, créez vos propres salles ou rejoignez une conversation en cours.</p>
+            <button class="btn btn-primary btn-lg" on:click={goToRoomsPage}>
+              Explorer les salles
+              <span class="btn-icon">→</span>
+            </button>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    {/if}
     
     <!-- Sections informatives pour tous -->
     <Features />
     
     <!-- Débogueur Firebase (uniquement en développement) -->
-    {#if import.meta.env.DEV}
+    <!-- {#if import.meta.env.DEV}
       <div class="container">
         <FirebaseDebugger />
-        
-        <!-- Module pour devenir administrateur en développement -->
-        {#if $isLoggedIn}
-          <MakeAdmin />
-        {/if}
       </div>
-    {/if}
+    {/if} -->
   </main>
   <Footer />
 </div>

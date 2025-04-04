@@ -6,6 +6,7 @@
   import './styles/global.css';
   import Router from 'svelte-spa-router';
   import routes from './routes';
+  import Toast from './components/ui/Toast.svelte';
 
   let appInitialized = false;
 
@@ -31,6 +32,8 @@
 
 <main>
   <Router {routes} />
+  <!-- Système de toast pour les notifications globales -->
+  <Toast />
 </main>
 
 <style>
