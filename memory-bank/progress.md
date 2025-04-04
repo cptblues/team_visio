@@ -83,7 +83,6 @@
   - Header: En-tête avec logo et informations de configuration
   - Hero: Section principale de présentation de l'application
   - Features: Présentation des fonctionnalités clés
-  - CallToAction: Section incitant à l'utilisation du service
   - Footer: Pied de page avec liens et copyright
 - Ajout d'un fichier CSS global avec une palette de couleurs cohérente
 - Intégration du routeur SPA (Single Page Application) avec svelte-spa-router
@@ -319,30 +318,32 @@
 - La visioconférence est automatiquement initialisée lorsque les conditions sont remplies (salle publique ou utilisateur connecté)
 - Les messages d'erreur sont clairs et guident l'utilisateur en cas de problème d'accès ou de chargement
 
-## Étape 13 : Ajout d'un bouton pour quitter la salle (TERMINÉE)
+## Étape 13 : Création d'une page dédiée aux salles (TERMINÉE)
 
-**Date :** 17 avril 2025
+**Date :** 12 avril 2025
 
 ### Tâches accomplies
-- Ajout d'un bouton "Quitter la salle" sur la page des salles (room.svelte) visible uniquement pour les utilisateurs connectés
-- Implémentation d'une fonction `exitRoom()` qui :
-  - Met à jour le statut de présence de l'utilisateur dans Firebase via `leaveRoom(roomId)`
-  - Redirige l'utilisateur vers la page d'accueil en utilisant `push('/')`
-  - Affiche un état de chargement pendant la sortie
-- Stylisation du bouton avec un style distinct (rouge) pour indiquer qu'il s'agit d'une action importante
-- Gestion des erreurs éventuelles lors de la sortie de la salle
+- Création d'une nouvelle page dédiée `rooms.svelte` pour centraliser les fonctionnalités liées aux salles
+- Réorganisation de l'interface utilisateur pour :
+  - Déplacer la liste des salles de la page d'accueil vers la nouvelle page
+  - Déplacer le formulaire de création de salle vers la nouvelle page
+  - Déplacer le panneau d'administration des salles vers la nouvelle page
+- Mise à jour de `index.svelte` pour simplifier la page d'accueil
+- Ajout d'un bouton de navigation vers la page des salles sur la page d'accueil
+- Mise à jour du menu de navigation dans `Header.svelte` pour inclure un lien vers la page des salles
+- Ajout de fonctionnalités de gestion des participants dans l'intégration Jitsi Meet
 
 ### Tests
-- Vérification que le bouton n'apparaît que pour les utilisateurs connectés
-- Tests manuels de sortie de salle pour confirmer que :
-  - L'utilisateur est bien redirigé vers la page d'accueil
-  - Le statut de présence est correctement mis à jour dans Firebase
-- Confirmation que les tests automatisés existants continuent de fonctionner
+- Vérification que tous les tests existants continuent de fonctionner correctement
+- Test manuel de la navigation entre la page d'accueil et la page des salles
+- Test du fonctionnement correct des fonctionnalités de gestion des salles sur la nouvelle page
+- Validation de l'affichage conditionnel des différentes sections selon l'état d'authentification de l'utilisateur
 
 ### Notes
-- Le bouton utilise un style cohérent avec le reste de l'interface tout en se démarquant pour indiquer son importance
-- La fonction `exitRoom()` est conçue pour fonctionner même en cas d'échec de la mise à jour du statut dans Firebase
-- L'état `isExiting` permet d'éviter les clics multiples pendant le processus de sortie
+- Cette nouvelle organisation améliore l'expérience utilisateur en séparant clairement les fonctionnalités
+- La page d'accueil est maintenant plus légère et se concentre sur la présentation de l'application
+- Les fonctionnalités complètes de gestion des salles sont regroupées sur une page dédiée
+- L'intégration Jitsi Meet a été améliorée pour offrir un meilleur contrôle des participants et des paramètres audio/vidéo
 
 ## Étape 15 : Configuration du déploiement pour tests et production (TERMINÉE)
 

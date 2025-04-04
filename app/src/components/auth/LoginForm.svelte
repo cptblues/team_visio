@@ -82,62 +82,111 @@
 <style>
   .auth-form {
     background-color: var(--background);
-    padding: 2rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
+    padding: 0; /* Pas de padding ici car il est déjà fourni par le conteneur parent */
     width: 100%;
     margin: 0 auto;
   }
   
   h2 {
-    color: var(--primary);
-    margin-bottom: 1.5rem;
+    color: var(--primary-dark);
+    margin-bottom: 2rem;
     text-align: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    position: relative;
+    padding-bottom: 0.75rem;
+  }
+  
+  h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    border-radius: 2px;
   }
   
   .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+    position: relative;
   }
   
   label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
     font-weight: 500;
+    color: var(--foreground);
+    font-size: 0.95rem;
   }
   
   input {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 0.25rem;
+    padding: 0.85rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
     font-size: 1rem;
+    transition: var(--transition);
+    background-color: var(--background);
   }
   
   input:focus {
     border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 2px var(--primary-light);
+    box-shadow: 0 0 0 3px var(--primary-light);
   }
   
   .btn-block {
     width: 100%;
-    margin-top: 1rem;
-    padding: 0.75rem;
+    margin-top: 1.5rem;
+    padding: 0.85rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 15px rgba(164, 153, 255, 0.25);
+    transition: var(--transition);
+  }
+  
+  .btn-block:hover:not([disabled]) {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(164, 153, 255, 0.35);
+  }
+  
+  .btn-block:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
   }
   
   .error-message {
-    background-color: var(--error);
-    color: white;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    margin-bottom: 1rem;
+    background-color: var(--error-light);
+    color: var(--error-dark);
+    padding: 0.85rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.25rem;
     text-align: center;
+    font-weight: 500;
+    border-left: 4px solid var(--error);
+    animation: shake 0.5s ease-in-out;
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
   }
   
   .auth-switch {
-    margin-top: 1.5rem;
+    margin-top: 2rem;
     text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  
+  .auth-switch p {
+    color: var(--foreground-alt);
+    font-size: 0.95rem;
   }
   
   .text-button {
@@ -145,12 +194,16 @@
     border: none;
     color: var(--primary);
     cursor: pointer;
-    font-weight: 500;
-    padding: 0;
-    text-decoration: underline;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    margin-left: 0.25rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
   }
   
   .text-button:hover {
     color: var(--primary-dark);
+    background-color: var(--primary-light);
+    text-decoration: none;
   }
 </style> 

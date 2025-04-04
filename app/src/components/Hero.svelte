@@ -1,7 +1,12 @@
 <script>
   import { currentUser, authLoading } from '../stores/userStore';
+  import { push } from 'svelte-spa-router';
   
   export let onOpenAuth = () => {};
+  
+  function goToLogin() {
+    push('/login');
+  }
 </script>
 
 <section class="hero">
@@ -16,7 +21,8 @@
           <button class="btn btn-primary">Créer une salle</button>
           <button class="btn btn-outline">Rejoindre une salle</button>
         {:else}
-          <button class="btn btn-primary" on:click={onOpenAuth}>Connexion requise</button>
+          <button class="btn btn-primary" on:click={goToLogin}>Se connecter</button>
+          <button class="btn btn-outline" on:click={goToLogin}>S'inscrire</button>
         {/if}
       </div>
       

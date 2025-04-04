@@ -93,7 +93,6 @@ src/components/
 ├── Footer.svelte        # Pied de page avec liens et copyright
 ├── Hero.svelte          # Section principale de présentation sur la page d'accueil
 ├── Features.svelte      # Présentation des fonctionnalités de l'application
-├── CallToAction.svelte  # Incitation à l'action pour l'utilisateur
 ├── UserStatusBar.svelte # Barre de statut utilisateur
 ├── FirebaseDebugger.svelte # Débogueur Firebase en développement
 ├── auth/                # Composants liés à l'authentification
@@ -139,6 +138,7 @@ src/
 ├── routes.js            # Configuration des routes de l'application
 └── routes/
     ├── index.svelte     # Composant de la page d'accueil
+    └── rooms.svelte     # Page dédiée aux salles (liste, création, administration)
 ```
 
 ## Modèle de données

@@ -2,20 +2,16 @@
   import Header from '../components/Header.svelte';
   import Hero from '../components/Hero.svelte';
   import Features from '../components/Features.svelte';
-  import CallToAction from '../components/CallToAction.svelte';
   import Footer from '../components/Footer.svelte';
   import AuthContainer from '../components/auth/AuthContainer.svelte';
   import UserProfile from '../components/auth/UserProfile.svelte';
-  import RoomList from '../components/rooms/RoomList.svelte';
   import { onMount } from 'svelte';
   import { initFirebase } from '../lib/firebase';
-  import { initUserStore, isLoggedIn, currentUser, isAdmin } from '../stores/userStore';
+  import { initUserStore, isLoggedIn, currentUser } from '../stores/userStore';
   import UserStatusBar from '../components/UserStatusBar.svelte';
-  import AddRoomForm from '../components/rooms/AddRoomForm.svelte';
-  import AdminRoomManager from '../components/rooms/AdminRoomManager.svelte';
   import FirebaseDebugger from '../components/FirebaseDebugger.svelte';
-  import { seedRooms } from '../lib/firebase/seedData';
   import MakeAdmin from '../components/admin/MakeAdmin.svelte';
+  import { push } from 'svelte-spa-router';
   
   let showAuthSection = false;
   
@@ -25,6 +21,10 @@
   
   function handleAuthSuccess() {
     showAuthSection = false;
+  }
+
+  function goToRoomsPage() {
+    push('/rooms');
   }
   
   // Firebase initialization status
@@ -37,11 +37,6 @@
       
       // Initialize user authentication store
       initUserStore();
-      
-      // Initialiser des données de démonstration si on est en mode développement
-      if (import.meta.env.DEV) {
-        await seedRooms();
-      }
     } catch (error) {
       console.error('Error initializing Firebase:', error);
     }
@@ -92,34 +87,22 @@
       </section>
     {/if}
     
-    <!-- Panneau d'administration des salles (pour administrateurs uniquement) -->
-    {#if $isLoggedIn && $isAdmin}
-      <section class="admin-section">
-        <div class="container">
-          <AdminRoomManager />
-        </div>
-      </section>
-    {:else if $isLoggedIn}
-      <!-- Formulaire d'ajout de salle (pour utilisateurs connectés non-administrateurs) -->
-      <section class="add-room-section">
-        <div class="container">
-          <AddRoomForm />
-        </div>
-      </section>
-    {/if}
-    
-    <!-- Liste des salles disponibles -->
-    <section class="rooms-section">
+    <!-- Bouton pour accéder au hall des salles -->
+    <section class="cta-section">
       <div class="container">
-        <RoomList />
+        <div class="cta-card">
+          <h2>Accédez au hall des salles</h2>
+          <p>Découvrez toutes les salles disponibles, créez vos propres salles ou rejoignez une conversation en cours.</p>
+          <button class="btn btn-primary btn-lg" on:click={goToRoomsPage}>
+            Explorer les salles
+            <span class="btn-icon">→</span>
+          </button>
+        </div>
       </div>
     </section>
     
-    <!-- Sections informatives pour les non-connectés -->
-    {#if !$isLoggedIn}
-      <Features />
-      <CallToAction />
-    {/if}
+    <!-- Sections informatives pour tous -->
+    <Features />
     
     <!-- Débogueur Firebase (uniquement en développement) -->
     {#if import.meta.env.DEV}
@@ -178,28 +161,57 @@
     color: var(--foreground);
   }
   
-  .admin-section {
-    padding: 2rem 0;
-    background-color: var(--background);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  
-  .add-room-section {
-    padding: 2rem 0;
+  .cta-section {
+    padding: 4rem 0;
     background-color: var(--background);
   }
   
-  .rooms-section {
-    padding: 3rem 0;
-    background-color: var(--background-alt);
+  .cta-card {
+    background-color: white;
+    border-radius: var(--radius-lg);
+    padding: 3rem 2rem;
+    box-shadow: 0 8px 30px var(--shadow);
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .cta-card h2 {
+    color: var(--primary-dark);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .cta-card p {
+    color: var(--foreground);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .btn-lg {
+    font-size: 1.1rem;
+    padding: 0.85rem 2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .btn-icon {
+    transition: transform 0.3s ease;
+  }
+  
+  .btn-lg:hover .btn-icon {
+    transform: translateX(5px);
   }
   
   .container {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 1.5rem;
   }
   
   .status {
@@ -220,39 +232,18 @@
     color: var(--error-dark);
   }
   
-  .demo-link-container {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background-color: var(--background);
-    border-radius: 0.5rem;
-    border: 1px solid var(--primary-light);
-  }
-  
-  .demo-link-container h3 {
-    color: var(--primary);
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-  }
-  
-  .demo-link {
-    display: inline-block;
-    margin-top: 1rem;
-    padding: 0.75rem 1.5rem;
-    background-color: var(--primary);
-    color: white;
-    text-decoration: none;
-    border-radius: 0.25rem;
-    font-weight: 500;
-    transition: background-color 0.2s;
-  }
-  
-  .demo-link:hover {
-    background-color: var(--primary-dark);
-  }
-  
   @media (max-width: 768px) {
-    .container {
-      padding: 0 1rem;
+    .cta-card {
+      padding: 2rem 1.5rem;
+    }
+    
+    .cta-card h2 {
+      font-size: 1.75rem;
+    }
+    
+    .btn-lg {
+      width: 100%;
+      justify-content: center;
     }
   }
 </style> 

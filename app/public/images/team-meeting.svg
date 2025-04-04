@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- Arrière-plan -->
+  <rect width="800" height="600" fill="#f9f9ff" />
+  
+  <!-- Table de conférence -->
+  <ellipse cx="400" cy="400" rx="300" ry="150" fill="#e8eaf6" stroke="#b0bec5" stroke-width="3" />
+  
+  <!-- Écran de visioconférence -->
+  <rect x="250" y="100" width="300" height="200" rx="10" fill="#ffffff" stroke="#3f51b5" stroke-width="3" />
+  <rect x="260" y="110" width="280" height="180" rx="5" fill="#e3f2fd" />
+  
+  <!-- Grille de visioconférence -->
+  <rect x="270" y="120" width="125" height="80" rx="5" fill="#bbdefb" stroke="#2196f3" stroke-width="2" />
+  <rect x="405" y="120" width="125" height="80" rx="5" fill="#bbdefb" stroke="#2196f3" stroke-width="2" />
+  <rect x="270" y="210" width="125" height="70" rx="5" fill="#bbdefb" stroke="#2196f3" stroke-width="2" />
+  <rect x="405" y="210" width="125" height="70" rx="5" fill="#bbdefb" stroke="#2196f3" stroke-width="2" />
+  
+  <!-- Support d'écran -->
+  <rect x="385" y="300" width="30" height="60" fill="#9e9e9e" />
+  <path d="M365 360 L435 360 L415 380 L385 380 Z" fill="#757575" />
+  
+  <!-- Personnage 1 -->
+  <circle cx="200" cy="350" r="40" fill="#ffccbc" />
+  <circle cx="200" cy="350" r="35" fill="#ffab91" />
+  <rect x="180" y="390" width="40" height="70" rx="15" fill="#4fc3f7" />
+  <rect x="175" y="390" width="50" height="30" rx="10" fill="#4fc3f7" />
+  
+  <!-- Personnage 2 -->
+  <circle cx="600" cy="350" r="40" fill="#ffccbc" />
+  <circle cx="600" cy="350" r="35" fill="#ffab91" />
+  <rect x="580" y="390" width="40" height="70" rx="15" fill="#81c784" />
+  <rect x="575" y="390" width="50" height="30" rx="10" fill="#81c784" />
+  
+  <!-- Personnage 3 -->
+  <circle cx="320" cy="470" r="40" fill="#ffccbc" />
+  <circle cx="320" cy="470" r="35" fill="#ffab91" />
+  <rect x="300" y="510" width="40" height="70" rx="15" fill="#ce93d8" />
+  <rect x="295" y="510" width="50" height="30" rx="10" fill="#ce93d8" />
+  
+  <!-- Personnage 4 -->
+  <circle cx="480" cy="470" r="40" fill="#ffccbc" />
+  <circle cx="480" cy="470" r="35" fill="#ffab91" />
+  <rect x="460" y="510" width="40" height="70" rx="15" fill="#ffd54f" />
+  <rect x="455" y="510" width="50" height="30" rx="10" fill="#ffd54f" />
+  
+  <!-- Ordinateurs portables -->
+  <rect x="170" y="390" width="60" height="5" rx="2" fill="#424242" />
+  <rect x="570" y="390" width="60" height="5" rx="2" fill="#424242" />
+  <rect x="290" y="510" width="60" height="5" rx="2" fill="#424242" />
+  <rect x="450" y="510" width="60" height="5" rx="2" fill="#424242" />
+  
+  <!-- Icônes de visioconférence -->
+  <circle cx="332" cy="160" r="15" fill="#1976d2" />
+  <circle cx="467" cy="160" r="15" fill="#1976d2" />
+  <circle cx="332" cy="245" r="15" fill="#1976d2" />
+  <circle cx="467" cy="245" r="15" fill="#1976d2" />
+  
+  <!-- Boutons de contrôle -->
+  <rect x="320" y="320" width="160" height="30" rx="15" fill="#e0e0e0" />
+  <circle cx="350" cy="335" r="10" fill="#f44336" />
+  <circle cx="400" cy="335" r="10" fill="#4caf50" />
+  <circle cx="450" cy="335" r="10" fill="#2196f3" />
+</svg> 

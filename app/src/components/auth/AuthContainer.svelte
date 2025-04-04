@@ -47,7 +47,16 @@
 <style>
   .auth-container {
     padding: 3rem 0;
-    background-color: var(--background-alt);
+    background-color: var(--background);
+  }
+  
+  .container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    background-color: white;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 30px var(--shadow);
   }
   
   .loading-indicator {
@@ -59,13 +68,13 @@
   }
   
   .spinner {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border: 4px solid var(--primary-light);
     border-top: 4px solid var(--primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
   
   @keyframes spin {
@@ -74,17 +83,43 @@
   }
   
   .auth-success {
-    background-color: var(--success);
+    background: linear-gradient(135deg, var(--success), var(--success-light));
     color: white;
-    padding: 2rem;
-    border-radius: 0.5rem;
+    padding: 2.5rem;
+    border-radius: var(--radius-md);
     text-align: center;
-    max-width: 400px;
-    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .auth-success::before {
+    content: '✓';
+    position: absolute;
+    font-size: 10rem;
+    opacity: 0.1;
+    top: -2rem;
+    right: -2rem;
+    color: white;
+    transform: rotate(15deg);
   }
   
   .auth-success h2 {
     color: white;
     margin-bottom: 1rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    position: relative;
+  }
+  
+  .auth-success p {
+    font-size: 1.1rem;
+    position: relative;
+  }
+  
+  @media (max-width: 768px) {
+    .container {
+      padding: 1.5rem;
+      margin: 0 1rem;
+    }
   }
 </style> 

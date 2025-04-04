@@ -1,5 +1,5 @@
 import { writable, derived } from 'svelte/store';
-import { onAuthChange } from '../lib/firebase/auth';
+import { onAuthChange, logoutUser } from '../lib/firebase/auth';
 
 // Store pour l'état de l'utilisateur
 export const currentUser = writable(null);
@@ -43,6 +43,18 @@ export function initUserStore() {
       unsubscribe = null;
     }
   };
+}
+
+// Déconnexion de l'utilisateur
+export async function logout() {
+  try {
+    await logoutUser();
+    // Le store sera automatiquement mis à jour par le listener onAuthChange
+  } catch (error) {
+    console.error("Erreur lors de la déconnexion:", error);
+    authError.set(error.message);
+    throw error;
+  }
 }
 
 // Réinitialiser le store
