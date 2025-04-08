@@ -1,10 +1,9 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { location, push } from 'svelte-spa-router';
-  import { initFirebase } from '../lib/firebase';
+  import { isSupabaseConfigValid } from '../lib/supabase/config';
   import { initUserStore, currentUser, isLoggedIn } from '../stores/userStore';
-  import { getDocument, subscribeToDocument, COLLECTIONS } from '../lib/firebase/firestore';
-  import { joinRoom, leaveRoom } from '../lib/firebase/rooms';
+  import { getRoom, subscribeToRoom, joinRoom, leaveRoom } from '../lib/supabase/rooms';
   import JitsiRoom from '../components/conference/JitsiRoom.svelte';
   import Header from '../components/Header.svelte';
   import UserStatusBar from '../components/UserStatusBar.svelte';
@@ -19,7 +18,7 @@
   let loading = true;
   let error = null;
   let unsubscribe = null;
-  let firebaseInitialized = false;
+  let supabaseInitialized = false;
   let showAuthSection = false;
   let participants = [];
   let isExiting = false;
@@ -34,9 +33,8 @@
   
   onMount(async () => {
     try {
-      // Initialiser Firebase
-      await initFirebase();
-      firebaseInitialized = true;
+      // Initialiser Supabase
+      supabaseInitialized = isSupabaseConfigValid;
       
       // Initialiser le store utilisateur
       initUserStore();
@@ -71,8 +69,7 @@
       error = null;
       
       // S'abonner aux changements de la salle
-      unsubscribe = subscribeToDocument(
-        COLLECTIONS.ROOMS, 
+      unsubscribe = subscribeToRoom(
         roomId, 
         (roomData) => {
           if (!roomData) {
@@ -96,8 +93,8 @@
   function formatDate(date) {
     if (!date) return 'Date inconnue';
     
-    // Si c'est un timestamp Firestore, le convertir en Date
-    const dateObj = date && date.toDate ? date.toDate() : new Date(date);
+    // Convertir la date en objet Date
+    const dateObj = new Date(date);
     
     return new Intl.DateTimeFormat('fr-FR', {
       dateStyle: 'medium',
@@ -114,7 +111,7 @@
     try {
       isExiting = true;
       
-      // Si l'utilisateur est connecté, mettre à jour son statut dans Firebase
+      // Si l'utilisateur est connecté, mettre à jour son statut dans Supabase
       if ($isLoggedIn && $currentUser) {
         await leaveRoom(roomId);
       }
@@ -189,11 +186,11 @@
           <div class="room-details">
             <div class="room-info">
               <h1 class="room-title">{room.name}</h1>
-              <span class="room-badge {room.isPublic ? 'public-badge' : 'private-badge'}">
-                {room.isPublic ? 'Public' : 'Privé'}
+              <span class="room-badge {room.is_public ? 'public-badge' : 'private-badge'}">
+                {room.is_public ? 'Public' : 'Privé'}
               </span>
               
-              {#if !room.isPublic && !$isLoggedIn}
+              {#if !room.is_public && !$isLoggedIn}
                 <div class="private-room-notice">
                   <p>Cette salle est privée. Veuillez vous connecter pour y accéder.</p>
                   <button class="btn btn-primary" on:click={toggleAuthSection}>
@@ -203,7 +200,7 @@
               {:else}
                 <div class="room-metadata">
                   <p class="room-description">{room.description || 'Aucune description'}</p>
-                  <p class="room-created">Créée le {formatDate(room.createdAt)}</p>
+                  <p class="room-created">Créée le {formatDate(room.created_at)}</p>
                   <p class="room-capacity">
                     Capacité maximale: {room.capacity ? `${room.capacity} participants` : 'Illimitée'}
                   </p>
@@ -223,7 +220,7 @@
                 </div>
                 
                 <div class="conference-container">
-                  {#if !$isLoggedIn && !room.isPublic}
+                  {#if !$isLoggedIn && !room.is_public}
                     <div class="auth-notice">
                       <p>Vous devez être connecté pour rejoindre cette salle privée.</p>
                       <button class="btn btn-primary" on:click={toggleAuthSection}>

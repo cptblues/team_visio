@@ -2,14 +2,11 @@
   import { onMount, onDestroy } from 'svelte';
   import { isAdmin, isLoggedIn, authLoading } from '../../stores/userStore';
   import { 
-    COLLECTIONS, 
-    subscribeToCollection
-  } from '../../lib/firebase/firestore';
-  import { 
-    createRoom, 
-    updateRoom, 
-    deleteRoom 
-  } from '../../lib/firebase/rooms';
+    subscribeToRooms,
+    createRoom,
+    updateRoom,
+    deleteRoom
+  } from '../../lib/supabase/rooms';
   import ConfirmModal from '../ui/ConfirmModal.svelte';
   import { toasts } from '../../stores/toastStore';
   
@@ -29,7 +26,7 @@
   let name = '';
   let description = '';
   let capacity = 10;
-  let isPublic = true;
+  let is_public = true;
   let formLoading = false;
   let formSuccess = false;
   let formErrorMessage = '';
@@ -37,16 +34,13 @@
   let formError = null;
   
   onMount(() => {
-    // S'abonner aux changements dans la collection ROOMS
+    // S'abonner aux changements dans la collection des salles
     try {
-      unsubscribe = subscribeToCollection(
-        COLLECTIONS.ROOMS,
-        (roomsData) => {
-          // Traiter les données et mettre à jour la liste
-          rooms = roomsData;
-          loading = false;
-        }
-      );
+      unsubscribe = subscribeToRooms((roomsData) => {
+        // Traiter les données et mettre à jour la liste
+        rooms = roomsData;
+        loading = false;
+      });
     } catch (err) {
       console.error('Erreur lors de l\'abonnement à la collection des salles:', err);
       error = `Erreur lors du chargement des salles: ${err.message}`;
@@ -66,7 +60,7 @@
     name = '';
     description = '';
     capacity = 10;
-    isPublic = true;
+    is_public = true;
     editing = false;
     currentRoom = null;
     showConfirmDelete = false;
@@ -81,7 +75,7 @@
     name = room.name;
     description = room.description || '';
     capacity = room.capacity || 10;
-    isPublic = room.isPublic;
+    is_public = room.is_public;
     editing = true;
     showConfirmDelete = false;
     showEditPanel = true;
@@ -113,7 +107,7 @@
         name: name.trim(),
         description: description.trim(),
         capacity: capacity > 0 ? capacity : null,
-        isPublic
+        is_public
       };
       
       if (editing && currentRoom) {
@@ -125,6 +119,7 @@
         toasts.success('Salle mise à jour avec succès');
         closeEditPanel();
       } else {
+        console.log('createRoom', roomData);
         // Créer une nouvelle salle
         await createRoom(roomData);
         formSuccess = true;
@@ -186,8 +181,8 @@
   function formatDate(date) {
     if (!date) return 'Date inconnue';
     
-    // Si c'est un timestamp Firestore, le convertir en Date
-    const dateObj = date && date.toDate ? date.toDate() : new Date(date);
+    // Convertir la date en objet Date
+    const dateObj = new Date(date);
     
     return new Intl.DateTimeFormat('fr-FR', {
       dateStyle: 'medium',
@@ -271,7 +266,7 @@
         
         <div class="form-group checkbox-group">
           <label>
-            <input type="checkbox" bind:checked={isPublic} />
+            <input type="checkbox" bind:checked={is_public} />
             Salle publique
           </label>
           <small>Les salles publiques sont visibles par tous les utilisateurs</small>
@@ -335,12 +330,12 @@
                   </div>
                 </td>
                 <td>
-                  <span class="room-badge {room.isPublic ? 'public-badge' : 'private-badge'}">
-                    {room.isPublic ? 'Public' : 'Privé'}
+                  <span class="room-badge {room.is_public ? 'public-badge' : 'private-badge'}">
+                    {room.is_public ? 'Public' : 'Privé'}
                   </span>
                 </td>
                 <td>{room.capacity || '∞'}</td>
-                <td>{formatDate(room.createdAt)}</td>
+                <td>{formatDate(room.created_at)}</td>
                 <td>
                   <button 
                     class="btn btn-small btn-primary" 

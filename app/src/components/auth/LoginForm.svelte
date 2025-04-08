@@ -1,5 +1,5 @@
 <script>
-  import { loginUser } from '../../lib/firebase/auth';
+  import { signInWithEmail } from '../../lib/supabase/auth';
   import { currentUser } from '../../stores/userStore';
   
   export let onSuccess = () => {};
@@ -19,14 +19,14 @@
     try {
       loading = true;
       error = '';
-      const user = await loginUser(email, password);
+      const { user } = await signInWithEmail(email, password);
       currentUser.set(user);
       onSuccess();
     } catch (err) {
       console.error('Erreur de connexion:', err);
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+      if (err.message?.includes('Invalid login credentials')) {
         error = 'Email ou mot de passe incorrect';
-      } else if (err.code === 'auth/invalid-email') {
+      } else if (err.message?.includes('Invalid email')) {
         error = 'Format d\'email invalide';
       } else {
         error = 'Erreur lors de la connexion. Veuillez réessayer.';

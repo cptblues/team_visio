@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
+import { render } from '@testing-library/svelte';
 
 // Au lieu de tester le composant RoomList directement, nous allons créer un mock du composant
 // pour éviter les problèmes liés à onMount dans un environnement de test serveur
@@ -10,21 +10,19 @@ const MockRoomList = {
         id: 'room1',
         name: 'Salle de Test',
         description: 'Description de test',
-        isPublic: true,
+        is_public: true,
         createdBy: 'testuser',
         createdAt: new Date(),
-        capacity: 5,
-        participants: []
+        capacity: 5
       },
       {
         id: 'room2',
         name: 'Salle Privée',
         description: 'Salle privée de test',
-        isPublic: false,
+        is_public: false,
         createdBy: 'admin',
         createdAt: new Date(),
-        capacity: 3,
-        participants: []
+        capacity: 3
       }
     ];
     
@@ -37,11 +35,11 @@ const MockRoomList = {
         
         <div class="room-grid">
           ${mockRooms.map(room => `
-            <div class="room-card ${room.isPublic ? 'public' : 'private'}">
+            <div class="room-card ${room.is_public ? 'public' : 'private'}">
               <div class="room-header">
                 <h3>${room.name}</h3>
-                <span class="room-badge ${room.isPublic ? 'public-badge' : 'private-badge'}">
-                  ${room.isPublic ? 'Public' : 'Privé'}
+                <span class="room-badge ${room.is_public ? 'public-badge' : 'private-badge'}">
+                  ${room.is_public ? 'Public' : 'Privé'}
                 </span>
               </div>
               <p class="room-description">${room.description}</p>

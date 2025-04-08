@@ -1,11 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { isLoggedIn } from '../../stores/userStore';
-  import { 
-    COLLECTIONS, 
-    subscribeToCollection, 
-    addDocument 
-  } from '../../lib/firebase/firestore';
+  import { supabase } from '../../lib/supabase/client';
   import { push } from 'svelte-spa-router';
   
   let rooms = [];
@@ -14,19 +10,46 @@
   let unsubscribe;
   
   onMount(() => {
-    // S'abonner aux changements dans la collection ROOMS
+    // S'abonner aux changements dans la table rooms
     try {
-      unsubscribe = subscribeToCollection(
-        COLLECTIONS.ROOMS,
-        (roomsData) => {
-          // Traiter les données et mettre à jour la liste
-          rooms = roomsData;
+      unsubscribe = supabase
+        .channel('rooms')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'rooms'
+        }, (payload) => {
+          // Mettre à jour la liste des salles
+          const { eventType, new: newRoom, old: oldRoom } = payload;
+          
+          if (eventType === 'INSERT') {
+            rooms = [...rooms, newRoom];
+          } else if (eventType === 'DELETE') {
+            rooms = rooms.filter(room => room.id !== oldRoom.id);
+          } else if (eventType === 'UPDATE') {
+            rooms = rooms.map(room => room.id === newRoom.id ? newRoom : room);
+          }
+          
           loading = false;
-        }
-      );
+        })
+        .subscribe();
+      
+      // Charger les salles initiales
+      const loadInitialRooms = async () => {
+        const { data, error: err } = await supabase
+          .from('rooms')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (err) throw err;
+        rooms = data;
+        loading = false;
+      };
+      
+      loadInitialRooms();
     } catch (err) {
-      console.error('Erreur lors de l\'abonnement à la collection des salles:', err);
-      error = `Erreur lors du chargement des salles: ${err.message}`;
+      console.error('Erreur lors de l\'abonnement aux salles:', err);
+      error = err.message || 'Une erreur est survenue lors du chargement des salles';
       loading = false;
     }
   });
@@ -34,24 +57,20 @@
   onDestroy(() => {
     // Se désabonner lors de la destruction du composant
     if (unsubscribe) {
-      unsubscribe();
+      unsubscribe.unsubscribe();
     }
   });
   
   function formatDate(date) {
     if (!date) return 'Date inconnue';
-    
-    // Si c'est un timestamp Firestore, le convertir en Date
-    const dateObj = date && date.toDate ? date.toDate() : new Date(date);
-    
     return new Intl.DateTimeFormat('fr-FR', {
       dateStyle: 'medium',
       timeStyle: 'short'
-    }).format(dateObj);
+    }).format(new Date(date));
   }
   
   function handleRoomClick(room) {
-    if (!$isLoggedIn && !room.isPublic) {
+    if (!$isLoggedIn && !room.is_public) {
       alert('Vous devez être connecté pour accéder à cette salle privée.');
       return;
     }
@@ -86,7 +105,7 @@
     <div class="room-grid">
       {#each rooms as room (room.id)}
         <div 
-          class="room-card {room.isPublic ? 'public' : 'private'}" 
+          class="room-card {room.is_public ? 'public' : 'private'}" 
           on:click={() => handleRoomClick(room)}
           role="button"
           tabindex="0"
@@ -94,8 +113,8 @@
         >
           <div class="room-header">
             <h3>{room.name}</h3>
-            <span class="room-badge {room.isPublic ? 'public-badge' : 'private-badge'}">
-              {room.isPublic ? 'Public' : 'Privé'}
+            <span class="room-badge {room.is_public ? 'public-badge' : 'private-badge'}">
+              {room.is_public ? 'Public' : 'Privé'}
             </span>
           </div>
           <p class="room-description">{room.description || 'Aucune description'}</p>
@@ -104,7 +123,7 @@
               <i class="icon-users"></i> {room.capacity || '∞'} participants max
             </span>
             <span class="room-created">
-              Créée le {formatDate(room.createdAt)}
+              Créée le {formatDate(room.created_at)}
             </span>
           </div>
           <div class="room-footer">

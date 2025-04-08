@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { firebaseApp, auth, db } from './lib/firebase';
-  import { isConfigValid, environment } from './lib/config';
+  import { isSupabaseConfigValid } from './lib/supabase/config';
   import { initUserStore } from './stores/userStore';
   import './styles/global.css';
   import Router from 'svelte-spa-router';
@@ -9,24 +8,26 @@
   import Toast from './components/ui/Toast.svelte';
 
   let appInitialized = false;
+  let unsubscribe = null;
 
   onMount(() => {
-    console.log('Environnement:', environment);
-    console.log('Configuration valide:', isConfigValid);
+    console.log('Configuration Supabase valide:', isSupabaseConfigValid);
     
-    if (firebaseApp && auth && db) {
-      console.log('Firebase initialisé avec succès');
+    if (isSupabaseConfigValid) {
+      console.log('Supabase initialisé avec succès');
       appInitialized = true;
       
       // Initialiser l'écoute de l'état d'authentification
-      const unsubscribe = initUserStore();
-      
-      return () => {
-        if (unsubscribe) unsubscribe();
-      };
+      initUserStore().then(unsub => {
+        unsubscribe = unsub;
+      });
     } else {
-      console.error('Erreur d\'initialisation de Firebase');
+      console.error('Erreur d\'initialisation de Supabase');
     }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   });
 </script>
 

@@ -66,7 +66,7 @@
         {/if}
         {#if $isLoggedIn}
           <li><a href="/rooms" use:link class:active={isActive('/rooms')} on:click={() => isMenuOpen = false}>Salles</a></li>
-          {#if $currentUser?.isAdmin}
+          {#if $currentUser?.is_admin}
           <li><a href="/admin" use:link class:active={isActive('/admin')} on:click={() => isMenuOpen = false}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right: 6px;">
               <path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z"/>
@@ -90,8 +90,8 @@
                 />
               </svg>
               <span class="user-name">
-                {$currentUser?.displayName || 'Utilisateur'}
-                {#if $currentUser?.isAdmin}
+                {$currentUser?.display_name || 'Utilisateur'}
+                {#if $currentUser?.is_admin}
                   <span class="admin-badge">(Admin)</span>
                 {/if}
               </span>

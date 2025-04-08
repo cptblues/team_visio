@@ -15,12 +15,12 @@
           <img src={$currentUser.photoURL} alt="Avatar" />
         {:else}
           <div class="avatar-placeholder">
-            {$currentUser?.displayName?.[0]?.toUpperCase() || $currentUser?.email?.[0]?.toUpperCase() || '?'}
+            {$currentUser?.display_name?.[0]?.toUpperCase() || $currentUser?.email?.[0]?.toUpperCase() || '?'}
           </div>
         {/if}
       </div>
       <div class="user-info">
-        <span class="user-name">{$currentUser?.displayName || $currentUser?.email || 'Utilisateur connecté'}</span>
+        <span class="user-name">{$currentUser?.display_name || $currentUser?.email || 'Utilisateur connecté'}</span>
       </div>
     </div>
   {:else}

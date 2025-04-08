@@ -1,16 +1,14 @@
 <script>
   import { onMount } from 'svelte';
-  import { initFirebase } from '../lib/firebase';
-  import { initUserStore, isLoggedIn, isAdmin, currentUser } from '../stores/userStore';
+  import { isSupabaseConfigValid } from '../lib/supabase/config';
+  import { initUserStore, isLoggedIn, isAdmin } from '../stores/userStore';
   import Header from '../components/Header.svelte';
   import Footer from '../components/Footer.svelte';
-  import UserStatusBar from '../components/UserStatusBar.svelte';
   import AdminRoomManager from '../components/rooms/AdminRoomManager.svelte';
-  import AddRoomForm from '../components/rooms/AddRoomForm.svelte';
   import { push } from 'svelte-spa-router';
   
-  // Firebase initialization status
-  let firebaseInitialized = false;
+  // Supabase initialization status
+  let supabaseInitialized = false;
   let loading = true;
   
   // Sections d'administration
@@ -18,14 +16,13 @@
   
   onMount(async () => {
     try {
-      await initFirebase();
-      firebaseInitialized = true;
+      supabaseInitialized = isSupabaseConfigValid;
       
       // Initialize user authentication store
       initUserStore();
       loading = false;
     } catch (error) {
-      console.error('Error initializing Firebase:', error);
+      console.error('Error initializing Supabase:', error);
       loading = false;
     }
   });
@@ -110,11 +107,6 @@
             <div class="admin-section">
               <h2 class="section-title">Gestion des salles</h2>
               <AdminRoomManager />
-            </div>
-            
-            <div class="admin-section">
-              <h2 class="section-title">Création rapide de salle</h2>
-              <AddRoomForm />
             </div>
           {:else if activeSection === 'users'}
             <div class="admin-section">

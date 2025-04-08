@@ -1,1 +1,13 @@
- 
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Fond -->
+  <rect width="200" height="200" fill="#e0e0e0" />
+  
+  <!-- Silhouette de la tête -->
+  <circle cx="100" cy="85" r="40" fill="#9e9e9e" />
+  
+  <!-- Corps -->
+  <rect x="60" y="125" width="80" height="60" rx="10" fill="#9e9e9e" />
+  
+  <!-- Initiales génériques -->
+  <text x="100" y="95" font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="white" text-anchor="middle">U</text>
+</svg> 

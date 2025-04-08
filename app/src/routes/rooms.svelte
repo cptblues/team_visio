@@ -1,23 +1,19 @@
 <script>
   import { onMount } from 'svelte';
-  import { initFirebase } from '../lib/firebase';
-  import { initUserStore, isLoggedIn, currentUser, isAdmin } from '../stores/userStore';
+  import { isSupabaseConfigValid } from '../lib/supabase/config';
+  import { initUserStore } from '../stores/userStore';
   import Header from '../components/Header.svelte';
   import Footer from '../components/Footer.svelte';
   import RoomList from '../components/rooms/RoomList.svelte';
-  import AddRoomForm from '../components/rooms/AddRoomForm.svelte';
-  import AdminRoomManager from '../components/rooms/AdminRoomManager.svelte';
-  import UserStatusBar from '../components/UserStatusBar.svelte';
-  import { seedRooms } from '../lib/firebase/seedData';
+  import { seedRooms } from '../lib/supabase/seedData';
   
-  // Firebase initialization status
-  let firebaseInitialized = false;
+  // Supabase initialization status
+  let supabaseInitialized = false;
   let loading = true;
   
   onMount(async () => {
     try {
-      await initFirebase();
-      firebaseInitialized = true;
+      supabaseInitialized = isSupabaseConfigValid;
       
       // Initialize user authentication store
       initUserStore();
@@ -29,7 +25,7 @@
       
       loading = false;
     } catch (error) {
-      console.error('Error initializing Firebase:', error);
+      console.error('Error initializing Supabase:', error);
       loading = false;
     }
   });

@@ -10,21 +10,19 @@ const MockAdminRoomManager = {
         id: 'room1',
         name: 'Salle de Test Admin',
         description: 'Description de test admin',
-        isPublic: true,
+        is_public: true,
         createdBy: 'admin',
         createdAt: new Date(),
-        capacity: 15,
-        participants: []
+        capacity: 15
       },
       {
         id: 'room2',
         name: 'Salle Privée Admin',
         description: 'Salle privée de test admin',
-        isPublic: false,
+        is_public: false,
         createdBy: 'admin',
         createdAt: new Date(),
-        capacity: 5,
-        participants: []
+        capacity: 5
       }
     ];
     
@@ -125,8 +123,8 @@ const MockAdminRoomManager = {
                       </div>
                     </td>
                     <td>
-                      <span class="room-badge ${room.isPublic ? 'public-badge' : 'private-badge'}">
-                        ${room.isPublic ? 'Public' : 'Privé'}
+                      <span class="room-badge ${room.is_public ? 'public-badge' : 'private-badge'}">
+                        ${room.is_public ? 'Public' : 'Privé'}
                       </span>
                     </td>
                     <td>${room.capacity}</td>

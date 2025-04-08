@@ -9,20 +9,16 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:env": "vitest run --environment=node --config .env.testing",
-    "deploy": "npm run build && firebase deploy --only hosting",
-    "deploy:preview": "firebase hosting:channel:deploy preview --expires 7d",
-    "firebase:login": "firebase login"
+    "test:env": "vitest run --environment=node --config .env.testing"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
-    "firebase-tools": "^14.1.0",
     "svelte": "^5.20.2",
     "vite": "^6.2.0"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
     "@testing-library/svelte": "^5.2.7",
-    "firebase": "^11.6.0",
     "jsdom": "^26.0.0",
     "svelte-spa-router": "^4.0.1",
     "vitest": "^3.1.1"

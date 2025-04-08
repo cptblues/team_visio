@@ -3,16 +3,9 @@
  * Expose les variables d'environnement de façon sécurisée et avec validation
  */
 
-// Firebase configuration
-export const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
-};
+// Configuration de l'environnement
+export const environment = import.meta.env.VITE_APP_ENV || 'development';
+export const isProduction = environment === 'production';
 
 // Jitsi Meet configuration
 export const jitsiConfig = {
@@ -81,13 +74,6 @@ export const jitsiConfig = {
     }
   }
 };
-
-// Environment information
-export const environment = import.meta.env.MODE || 'development';
-
-export const isDevelopment = environment === 'development';
-
-export const isProduction = environment === 'production';
 
 // Validation des variables d'environnement requises
 function validateConfig() {

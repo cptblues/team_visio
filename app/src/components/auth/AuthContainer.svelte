@@ -13,12 +13,8 @@
   }
   
   onMount(() => {
-    // Initialiser l'écoute de l'état d'authentification
-    const unsubscribe = initUserStore();
-    
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
+    initUserStore();
+    return () => {};
   });
 </script>
 
@@ -32,7 +28,7 @@
     {:else if $currentUser}
       <div class="auth-success">
         <h2>Vous êtes connecté</h2>
-        <p>Bienvenue, {$currentUser.displayName || $currentUser.email}!</p>
+        <p>Bienvenue, {$currentUser.display_name || $currentUser.email}!</p>
       </div>
     {:else}
       {#if isLoginMode}

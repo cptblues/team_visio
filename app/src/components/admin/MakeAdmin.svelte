@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { makeSelfAdmin } from '../../lib/firebase/admin';
+  import { makeSelfAdmin } from '../../lib/supabase/admin';
   import { isAdmin, currentUser } from '../../stores/userStore';
   
   let loading = false;

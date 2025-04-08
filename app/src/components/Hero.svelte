@@ -2,8 +2,6 @@
   import { currentUser, authLoading } from '../stores/userStore';
   import { push } from 'svelte-spa-router';
   
-  export let onOpenAuth = () => {};
-  
   function goToLogin() {
     push('/login');
   }

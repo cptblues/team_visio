@@ -1,5 +1,5 @@
 <script>
-  import { logoutUser } from '../../lib/firebase/auth';
+  import { signOut } from '../../lib/supabase';
   import { currentUser, resetUserStore } from '../../stores/userStore';
   
   let loading = false;
@@ -7,7 +7,7 @@
   async function handleLogout() {
     try {
       loading = true;
-      await logoutUser();
+      await signOut();
       resetUserStore();
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
@@ -23,13 +23,13 @@
       <div class="user-info">
         <div class="avatar">
           <div class="avatar-placeholder">
-            {$currentUser.displayName ? $currentUser.displayName[0].toUpperCase() : 'U'}
+            {$currentUser.display_name ? $currentUser.display_name[0].toUpperCase() : 'U'}
           </div>
         </div>
         <div class="user-details">
-          <h3>{$currentUser.displayName || 'Utilisateur'}</h3>
+          <h3>{$currentUser.display_name || 'Utilisateur'}</h3>
           <p class="user-email">{$currentUser.email}</p>
-          {#if $currentUser.isAdmin}
+          {#if $currentUser.is_admin}
             <span class="admin-badge">Administrateur</span>
           {/if}
         </div>

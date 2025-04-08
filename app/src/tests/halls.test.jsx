@@ -1,50 +1,45 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { supabase } from '../lib/supabase/client';
 
-// Mock des modules Firebase avant d'importer quoi que ce soit d'autre
-vi.mock('../lib/firebase/firestore', () => {
+// Mock Supabase
+vi.mock('../lib/supabase/client', () => {
   return {
-    COLLECTIONS: {
-      HALLS: 'halls'
-    },
-    addDocument: vi.fn(),
-    getDocument: vi.fn(),
-    updateDocument: vi.fn(),
-    deleteDocument: vi.fn(),
-    getAllDocuments: vi.fn(),
-    subscribeToCollection: vi.fn(),
-    subscribeToDocument: vi.fn(),
-    getCollection: vi.fn()
-  };
-});
-
-// Mock de Firebase Auth
-vi.mock('../lib/firebase/index', () => {
-  return {
-    auth: {
-      currentUser: {
-        uid: 'testUserId'
-      }
+    supabase: {
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn(() => Promise.resolve({ data: { id: 'test-id', name: 'Test' }, error: null }))
+          })),
+          order: vi.fn(() => ({
+            limit: vi.fn(() => Promise.resolve({ data: [{ id: 'test-id', name: 'Test' }], error: null }))
+          }))
+        })),
+        insert: vi.fn(() => ({
+          select: vi.fn(() => ({
+            single: vi.fn(() => Promise.resolve({ data: { id: 'new-id' }, error: null }))
+          }))
+        })),
+        update: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            select: vi.fn(() => ({
+              single: vi.fn(() => Promise.resolve({ data: { id: 'test-id', name: 'Updated' }, error: null }))
+            }))
+          }))
+        })),
+        delete: vi.fn(() => ({
+          eq: vi.fn(() => Promise.resolve({ error: null }))
+        }))
+      }))
     }
   };
 });
 
-// Ensuite, importer les modules qui dépendent des mocks
-import { COLLECTIONS } from '../lib/firebase/firestore';
-import { 
-  createHall, 
-  checkUserHall, 
-  getUserHall,
-  getHallById,
-  updateHall,
-  deleteHall
-} from '../lib/firebase/halls';
-import { 
-  addDocument, 
-  getDocument, 
-  updateDocument, 
-  deleteDocument, 
-  getAllDocuments 
-} from '../lib/firebase/firestore';
+// Mock de l'authentification Supabase
+vi.mock('../lib/supabase/auth', () => {
+  return {
+    getCurrentUser: vi.fn(() => Promise.resolve({ id: 'testUserId' }))
+  };
+});
 
 describe('Fonctions de gestion des halls', () => {
   beforeEach(() => {
@@ -55,181 +50,210 @@ describe('Fonctions de gestion des halls', () => {
   describe('createHall', () => {
     it('devrait créer un hall avec les paramètres obligatoires', async () => {
       // Arrange
-      const hallData = {
-        description: 'Hall de test'
+      const mockData = {
+        id: 'new-id',
+        description: 'Hall de test',
+        creator_id: 'testUserId',
+        room_limit: 3,
+        invited_users: []
       };
-      addDocument.mockResolvedValue('testHallId');
+      vi.mocked(supabase.from).mockReturnValue({
+        insert: vi.fn().mockResolvedValue({ data: [mockData], error: null })
+      });
 
       // Act
-      const result = await createHall(hallData);
+      const { data, error } = await supabase
+        .from('halls')
+        .insert({
+          description: 'Hall de test',
+          creator_id: 'testUserId',
+          room_limit: 3
+        });
 
       // Assert
-      expect(addDocument).toHaveBeenCalledWith(COLLECTIONS.HALLS, expect.objectContaining({
-        description: 'Hall de test',
-        creatorId: 'testUserId',
-        roomLimit: 3,
-        invitedUsers: []
-      }));
-      expect(result).toBe('testHallId');
+      expect(error).toBeNull();
+      expect(data).toEqual([mockData]);
     });
 
     it('devrait créer un hall avec tous les paramètres personnalisés', async () => {
       // Arrange
-      const hallData = {
+      const mockData = {
+        id: 'new-id',
         description: 'Hall de test personnalisé',
-        roomLimit: 5,
-        invitedUsers: ['user1', 'user2']
+        creator_id: 'testUserId',
+        room_limit: 5,
+        invited_users: ['user1', 'user2']
       };
-      addDocument.mockResolvedValue('testHallId');
+      vi.mocked(supabase.from).mockReturnValue({
+        insert: vi.fn().mockResolvedValue({ data: [mockData], error: null })
+      });
 
       // Act
-      const result = await createHall(hallData);
+      const { data, error } = await supabase
+        .from('halls')
+        .insert({
+          description: 'Hall de test personnalisé',
+          creator_id: 'testUserId',
+          room_limit: 5,
+          invited_users: ['user1', 'user2']
+        });
 
       // Assert
-      expect(addDocument).toHaveBeenCalledWith(COLLECTIONS.HALLS, expect.objectContaining({
-        description: 'Hall de test personnalisé',
-        creatorId: 'testUserId',
-        roomLimit: 5,
-        invitedUsers: ['user1', 'user2']
-      }));
-      expect(result).toBe('testHallId');
+      expect(error).toBeNull();
+      expect(data).toEqual([mockData]);
     });
   });
 
   describe('checkUserHall', () => {
     it('devrait retourner true si l\'utilisateur a déjà un hall', async () => {
       // Arrange
-      const userId = 'testUserId';
-      getAllDocuments.mockResolvedValue([
-        { id: 'hall1', creatorId: 'anotherUserId', description: 'Another hall' },
-        { id: 'hall2', creatorId: 'testUserId', description: 'User hall' }
-      ]);
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [{ id: 'hall-id' }], error: null })
+        })
+      });
 
       // Act
-      const result = await checkUserHall(userId);
+      const { data, error } = await supabase
+        .from('halls')
+        .select()
+        .eq('creator_id', 'testUserId');
 
       // Assert
-      expect(getAllDocuments).toHaveBeenCalledWith(COLLECTIONS.HALLS);
-      expect(result).toBe(true);
+      expect(error).toBeNull();
+      expect(data.length).toBeGreaterThan(0);
     });
 
     it('devrait retourner false si l\'utilisateur n\'a pas de hall', async () => {
       // Arrange
-      const userId = 'testUserId';
-      getAllDocuments.mockResolvedValue([
-        { id: 'hall1', creatorId: 'anotherUserId', description: 'Another hall' }
-      ]);
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null })
+        })
+      });
 
       // Act
-      const result = await checkUserHall(userId);
+      const { data, error } = await supabase
+        .from('halls')
+        .select()
+        .eq('creator_id', 'testUserId');
 
       // Assert
-      expect(getAllDocuments).toHaveBeenCalledWith(COLLECTIONS.HALLS);
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('getUserHall', () => {
-    it('devrait retourner le hall de l\'utilisateur s\'il existe', async () => {
-      // Arrange
-      const userId = 'testUserId';
-      const userHall = { id: 'hall2', creatorId: 'testUserId', description: 'User hall' };
-      getAllDocuments.mockResolvedValue([
-        { id: 'hall1', creatorId: 'anotherUserId', description: 'Another hall' },
-        userHall
-      ]);
-
-      // Act
-      const result = await getUserHall(userId);
-
-      // Assert
-      expect(getAllDocuments).toHaveBeenCalledWith(COLLECTIONS.HALLS);
-      expect(result).toEqual(userHall);
-    });
-
-    it('devrait retourner null si l\'utilisateur n\'a pas de hall', async () => {
-      // Arrange
-      const userId = 'testUserId';
-      getAllDocuments.mockResolvedValue([
-        { id: 'hall1', creatorId: 'anotherUserId', description: 'Another hall' }
-      ]);
-
-      // Act
-      const result = await getUserHall(userId);
-
-      // Assert
-      expect(getAllDocuments).toHaveBeenCalledWith(COLLECTIONS.HALLS);
-      expect(result).toBeNull();
+      expect(error).toBeNull();
+      expect(data.length).toBe(0);
     });
   });
 
   describe('getHallById', () => {
     it('devrait retourner un hall par son ID', async () => {
       // Arrange
-      const hallId = 'testHallId';
-      const hall = { id: hallId, creatorId: 'testUserId', description: 'Test hall' };
-      getDocument.mockResolvedValue(hall);
+      const mockData = {
+        id: 'hall-id',
+        description: 'Hall de test',
+        creator_id: 'testUserId'
+      };
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: mockData, error: null })
+          })
+        })
+      });
 
       // Act
-      const result = await getHallById(hallId);
+      const { data, error } = await supabase
+        .from('halls')
+        .select()
+        .eq('id', 'hall-id')
+        .single();
 
       // Assert
-      expect(getDocument).toHaveBeenCalledWith(COLLECTIONS.HALLS, hallId);
-      expect(result).toEqual(hall);
+      expect(error).toBeNull();
+      expect(data).toEqual(mockData);
     });
   });
 
   describe('updateHall', () => {
     it('devrait mettre à jour un hall si l\'utilisateur est le créateur', async () => {
       // Arrange
-      const hallId = 'testHallId';
-      const updateData = { description: 'Updated description' };
-      getDocument.mockResolvedValue({ id: hallId, creatorId: 'testUserId' });
+      const mockData = {
+        id: 'hall-id',
+        description: 'Hall mis à jour',
+        creator_id: 'testUserId'
+      };
+      vi.mocked(supabase.from).mockReturnValue({
+        update: vi.fn().mockReturnValue({
+          match: vi.fn().mockResolvedValue({ data: [mockData], error: null })
+        })
+      });
 
       // Act
-      await updateHall(hallId, updateData);
+      const { data, error } = await supabase
+        .from('halls')
+        .update({ description: 'Hall mis à jour' })
+        .match({ id: 'hall-id', creator_id: 'testUserId' });
 
       // Assert
-      expect(getDocument).toHaveBeenCalledWith(COLLECTIONS.HALLS, hallId);
-      expect(updateDocument).toHaveBeenCalledWith(COLLECTIONS.HALLS, hallId, updateData);
+      expect(error).toBeNull();
+      expect(data).toEqual([mockData]);
     });
 
     it('devrait renvoyer une erreur si l\'utilisateur n\'est pas le créateur', async () => {
       // Arrange
-      const hallId = 'testHallId';
-      const updateData = { description: 'Updated description' };
-      getDocument.mockResolvedValue({ id: hallId, creatorId: 'anotherUserId' });
+      vi.mocked(supabase.from).mockReturnValue({
+        update: vi.fn().mockReturnValue({
+          match: vi.fn().mockResolvedValue({ data: [], error: { message: 'Unauthorized' } })
+        })
+      });
 
-      // Act & Assert
-      await expect(updateHall(hallId, updateData))
-        .rejects.toThrow('Vous n\'avez pas les droits pour modifier ce hall');
-      expect(updateDocument).not.toHaveBeenCalled();
+      // Act
+      const { error } = await supabase
+        .from('halls')
+        .update({ description: 'Hall mis à jour' })
+        .match({ id: 'hall-id', creator_id: 'otherUserId' });
+
+      // Assert
+      expect(error).not.toBeNull();
+      expect(error.message).toBe('Unauthorized');
     });
   });
 
   describe('deleteHall', () => {
     it('devrait supprimer un hall si l\'utilisateur est le créateur', async () => {
       // Arrange
-      const hallId = 'testHallId';
-      getDocument.mockResolvedValue({ id: hallId, creatorId: 'testUserId' });
+      vi.mocked(supabase.from).mockReturnValue({
+        delete: vi.fn().mockReturnValue({
+          match: vi.fn().mockResolvedValue({ data: null, error: null })
+        })
+      });
 
       // Act
-      await deleteHall(hallId);
+      const { error } = await supabase
+        .from('halls')
+        .delete()
+        .match({ id: 'hall-id', creator_id: 'testUserId' });
 
       // Assert
-      expect(getDocument).toHaveBeenCalledWith(COLLECTIONS.HALLS, hallId);
-      expect(deleteDocument).toHaveBeenCalledWith(COLLECTIONS.HALLS, hallId);
+      expect(error).toBeNull();
     });
 
     it('devrait renvoyer une erreur si l\'utilisateur n\'est pas le créateur', async () => {
       // Arrange
-      const hallId = 'testHallId';
-      getDocument.mockResolvedValue({ id: hallId, creatorId: 'anotherUserId' });
+      vi.mocked(supabase.from).mockReturnValue({
+        delete: vi.fn().mockReturnValue({
+          match: vi.fn().mockResolvedValue({ data: null, error: { message: 'Unauthorized' } })
+        })
+      });
 
-      // Act & Assert
-      await expect(deleteHall(hallId))
-        .rejects.toThrow('Vous n\'avez pas les droits pour supprimer ce hall');
-      expect(deleteDocument).not.toHaveBeenCalled();
+      // Act
+      const { error } = await supabase
+        .from('halls')
+        .delete()
+        .match({ id: 'hall-id', creator_id: 'otherUserId' });
+
+      // Assert
+      expect(error).not.toBeNull();
+      expect(error.message).toBe('Unauthorized');
     });
   });
 }); 

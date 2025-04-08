@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { push } from 'svelte-spa-router';
-  import { initFirebase } from '../lib/firebase';
+  import { isSupabaseConfigValid } from '../lib/supabase/config';
   import { initUserStore, currentUser, isLoggedIn } from '../stores/userStore';
   import LoginForm from '../components/auth/LoginForm.svelte';
   import RegisterForm from '../components/auth/RegisterForm.svelte';
@@ -10,7 +10,7 @@
 
   // État pour gérer l'affichage du formulaire (connexion ou inscription)
   let isLoginMode = true;
-  let firebaseInitialized = false;
+  let supabaseInitialized = false;
   
   // Fonction pour basculer entre les modes connexion et inscription
   function toggleAuthMode() {
@@ -25,9 +25,8 @@
   
   onMount(async () => {
     try {
-      // Initialiser Firebase
-      await initFirebase();
-      firebaseInitialized = true;
+      // Initialiser Supabase
+      supabaseInitialized = isSupabaseConfigValid;
       
       // Initialiser le store utilisateur
       initUserStore();
@@ -75,7 +74,7 @@
             {#if $currentUser}
               <div class="auth-success">
                 <h2>Vous êtes connecté</h2>
-                <p>Bienvenue, {$currentUser.displayName || $currentUser.email}!</p>
+                <p>Bienvenue, {$currentUser.display_name || $currentUser.email}!</p>
                 <button class="btn btn-primary" on:click={() => push('/')}>
                   Aller à l'accueil
                 </button>

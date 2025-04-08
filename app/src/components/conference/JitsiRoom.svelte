@@ -1,22 +1,15 @@
 <script>
   import { onMount, onDestroy, tick } from 'svelte';
   import { 
-    initJitsiMeet, 
     disposeJitsiMeet, 
     isJitsiActive,
-    setAudioMuted,
-    setVideoMuted,
     toggleScreenSharing,
     toggleTileView,
-    getAllParticipants,
-    runJitsiDiagnostics,
     testJitsiAPI
   } from '../../lib/jitsi';
-  import { currentUser, isLoggedIn } from '../../stores/userStore';
-  import { joinRoom, leaveRoom } from '../../lib/firebase/rooms';
-  import { getDocument, subscribeToDocument, COLLECTIONS } from '../../lib/firebase/firestore';
+  import { currentUser } from '../../stores/userStore';
+  import { joinRoom, leaveRoom, getRoom, subscribeToRoom, subscribeToRoomParticipants } from '../../lib/supabase/rooms';
   import { 
-    jitsiConference, 
     jitsiParticipants, 
     participantsCount,
     updateConferenceState,
@@ -44,9 +37,10 @@
   let hasError = false;
   let errorMessage = '';
   let isJoined = false;
-  let firebaseParticipants = [];
+  let roomParticipants = [];
   let roomData = null;
-  let unsubscribe = null;
+  let unsubscribeRoom = null;
+  let unsubscribeParticipants = null;
   let isJitsiAvailable = false;
   
   // États des contrôles
@@ -99,15 +93,15 @@
       isLoading = true;
       hasError = false;
       
-      // Charger les données de la salle depuis Firestore
+      // Charger les données de la salle depuis Supabase
       await loadRoomData();
       
-      // Si l'option autoJoin est activée, rejoindre la salle dans Firebase
+      // Si l'option autoJoin est activée, rejoindre la salle dans Supabase
       if (autoJoin && $currentUser) {
         try {
           await joinRoom(roomId);
         } catch (error) {
-          // On continue même si on ne peut pas rejoindre la salle dans Firebase
+          // On continue même si on ne peut pas rejoindre la salle dans Supabase
         }
       }
       
@@ -140,8 +134,11 @@
     stopParticipantsPolling();
     
     // Se désabonner des mises à jour de la salle
-    if (unsubscribe) {
-      unsubscribe();
+    if (unsubscribeRoom) {
+      unsubscribeRoom.unsubscribe();
+    }
+    if (unsubscribeParticipants) {
+      unsubscribeParticipants.unsubscribe();
     }
     
     // Quitter la salle Jitsi Meet
@@ -149,7 +146,7 @@
       disposeJitsiMeet();
     }
     
-    // Quitter la salle dans Firebase
+    // Quitter la salle dans Supabase
     if (isJoined && $currentUser) {
       try {
         await leaveRoom(roomId);
@@ -167,23 +164,28 @@
   // Charger les données de la salle
   async function loadRoomData() {
     try {
+      // Charger les données initiales de la salle
+      const room = await getRoom(roomId);
+      if (room) {
+        roomData = room;
+      }
+      
       // S'abonner aux changements de la salle
-      unsubscribe = subscribeToDocument(
-        COLLECTIONS.ROOMS,
-        roomId,
-        (data) => {
-          if (data) {
-            roomData = data;
-            
-            // Mettre à jour la liste des participants Firebase
-            if (data.participants) {
-              firebaseParticipants = data.participants;
-            }
-          }
+      unsubscribeRoom = subscribeToRoom(roomId, (room) => {
+        roomData = room;
+      });
+      
+      // S'abonner aux changements des participants
+      unsubscribeParticipants = subscribeToRoomParticipants(roomId, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          roomParticipants = [...roomParticipants, payload.new];
+        } else if (payload.eventType === 'DELETE') {
+          roomParticipants = roomParticipants.filter(p => p.user_id !== payload.old.user_id);
         }
-      );
+      });
     } catch (error) {
       // Ignorer les erreurs non critiques
+      console.error('Erreur non critique lors du chargement de la salle:', error);
     }
   }
   
@@ -214,7 +216,7 @@
       
       // Information utilisateur
       if ($currentUser) {
-        if ($currentUser.displayName) params.append('userInfo.displayName', $currentUser.displayName);
+        if ($currentUser.display_name) params.append('userInfo.displayName', $currentUser.display_name);
         if ($currentUser.email) params.append('userInfo.email', $currentUser.email);
       }
       
@@ -649,7 +651,7 @@ Si les problèmes persistent, essayez d'accéder directement à: https://meet.ji
               <li class="participant-item">
                 <div class="participant-info">
                   <div class="participant-name">
-                    {participant.displayName}
+                    {participant.display_name}
                     {#if participant.isLocal}
                       <span class="local-badge">vous</span>
                     {/if}

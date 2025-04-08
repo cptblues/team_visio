@@ -29,3 +29,4 @@ Résultats des tests :
 Prochaines étapes :
 - Étape 2 : Vérification des Halls Existants (empêcher un utilisateur de créer plusieurs halls)
 - Étape 3 : Interface de création de Hall en Svelte
+- Intégration du composant `AdminRoomManager` pour la gestion des salles

@@ -1,5 +1,5 @@
 <script>
-  import { registerUser } from '../../lib/firebase/auth';
+  import { signUpWithEmail } from '../../lib/supabase/auth';
   import { currentUser } from '../../stores/userStore';
   
   export let onSuccess = () => {};
@@ -31,16 +31,16 @@
     try {
       loading = true;
       error = '';
-      const user = await registerUser(email, password, displayName);
+      const { user } = await signUpWithEmail(email, password, displayName);
       currentUser.set(user);
       onSuccess();
     } catch (err) {
       console.error('Erreur d\'inscription:', err);
-      if (err.code === 'auth/email-already-in-use') {
+      if (err.message?.includes('already registered')) {
         error = 'Cet email est déjà utilisé';
-      } else if (err.code === 'auth/invalid-email') {
+      } else if (err.message?.includes('invalid email')) {
         error = 'Format d\'email invalide';
-      } else if (err.code === 'auth/weak-password') {
+      } else if (err.message?.includes('password')) {
         error = 'Le mot de passe est trop faible';
       } else {
         error = 'Erreur lors de l\'inscription. Veuillez réessayer.';

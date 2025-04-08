@@ -1,8 +1,24 @@
 import { describe, it, expect, vi } from 'vitest';
-import Home from '../routes/index.svelte';
+import HomePage from '../routes/index.svelte';
+import { supabase } from '../lib/supabase/client';
+import { isSupabaseConfigValid } from '../lib/supabase/config';
 
-describe('Page d\'accueil', () => {
-  it('Devrait être définie correctement', () => {
-    expect(Home).toBeDefined();
+// Mock Supabase
+vi.mock('../lib/supabase', () => ({
+  supabase: {
+    auth: {},
+    from: () => ({})
+  }
+}));
+
+vi.mock('../lib/supabase/config', () => ({
+  isSupabaseConfigValid: true
+}));
+
+describe('HomePage', () => {
+  it('initialise correctement la page d\'accueil', () => {
+    expect(HomePage).toBeDefined();
+    expect(supabase).toBeDefined();
+    expect(isSupabaseConfigValid).toBe(true);
   });
 }); 

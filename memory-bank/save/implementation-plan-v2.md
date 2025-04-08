@@ -138,6 +138,7 @@ Permettre aux utilisateurs authentifiés de créer un hall (espace regroupant de
 - Ajouter des boutons "Modifier" et "Supprimer" à côté de chaque salle dans `HallDashboard.svelte`.
 - Implémenter des fonctions `updateRoom` et `deleteRoom` pour interagir avec Firestore.
 - Restreindre la suppression à toutes les salles sauf la salle d’attente.
+- Intégrer le composant `AdminRoomManager` dans la section de gestion des salles.
 
 **Tests** :
 - **Unitaire** : Tester `updateRoom` et `deleteRoom` avec des cas limites (ex. tentative de supprimer la salle d’attente).
